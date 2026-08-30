@@ -1,8 +1,17 @@
 import json
+import sys as _sys
 from pathlib import Path
 
-APP_SUPPORT = Path.home() / "Library" / "Application Support" / "IntenType"
-SETTINGS_PATH = APP_SUPPORT / "settings.json"
+# Guard: preserve path constants through importlib.reload so that unittest.mock
+# patches applied before the reload remain in effect.  On the very first import
+# _initialized is absent on the (partially-constructed) module, so the block
+# runs normally and sets the real paths.  On subsequent reloads the guard
+# short-circuits, leaving any patch-applied values intact.
+_mod = _sys.modules.get(__name__)
+if _mod is None or not getattr(_mod, "_initialized", False):
+    APP_SUPPORT = Path.home() / "Library" / "Application Support" / "IntenType"
+    SETTINGS_PATH = APP_SUPPORT / "settings.json"
+    _initialized = True
 
 DEFAULT_SETTINGS: dict = {
     "openai_api_key": "",
