@@ -1,9 +1,9 @@
 import asyncio
+import subprocess
 import threading
 from datetime import datetime, timezone
 
 from AppKit import NSApplication, NSObject, NSStatusBar, NSVariableStatusItemLength
-import Quartz
 
 from daemon import (
     hotkey as hotkey_mod,
@@ -25,6 +25,7 @@ class _Delegate(NSObject):
         self._asr = asr_mod.ASR(s.get("whisper_model", "small.en"))
         self._audio = audio_mod.AudioCapture()
         self._state = "IDLE"
+        self._state_lock = threading.Lock()
         self._ctx: dict = {}
 
         # Async event loop for LLM calls (runs in background thread)
@@ -49,22 +50,33 @@ class _Delegate(NSObject):
         )
 
     def _on_record_start(self):
-        if self._state != "IDLE":
-            return
+        with self._state_lock:
+            if self._state != "IDLE":
+                return
+            self._state = "RECORDING"
         ctx = context.get_context()
         if not ctx["safe"]:
             self._warn(ctx["reason"])
+            with self._state_lock:
+                self._state = "IDLE"
             return
         self._ctx = ctx
-        self._state = "RECORDING"
         self._status_item.button().setTitle_("🔴")
         self._audio.start()
 
     def _on_record_stop(self):
-        if self._state != "RECORDING":
+        with self._state_lock:
+            if self._state != "RECORDING":
+                return
+            self._state = "TRANSCRIBING"
+        try:
+            audio_data = self._audio.stop()
+        except Exception as exc:
+            print(f"[IntenType] audio capture error: {exc}")
+            with self._state_lock:
+                self._state = "IDLE"
+            self._status_item.button().setTitle_("🎤")
             return
-        self._state = "TRANSCRIBING"
-        audio_data = self._audio.stop()
         asyncio.run_coroutine_threadsafe(
             self._process(audio_data, dict(self._ctx)),
             self._loop,
@@ -75,7 +87,8 @@ class _Delegate(NSObject):
             raw = self._asr.transcribe(audio_data)
             if not raw:
                 return
-            self._state = "INJECTING"
+            with self._state_lock:
+                self._state = "INJECTING"
             polished = intent.rewrite(raw, ctx["app"])
             injector.inject(polished)
             server.add_history_entry({
@@ -88,11 +101,16 @@ class _Delegate(NSObject):
         except Exception as exc:
             print(f"[IntenType] pipeline error: {exc}")
         finally:
+            self.performSelectorOnMainThread_withObject_waitUntilDone_(
+                "_reset_to_idle_:", None, False
+            )
+
+    def _reset_to_idle_(self, _):
+        with self._state_lock:
             self._state = "IDLE"
-            self._status_item.button().setTitle_("🎤")
+        self._status_item.button().setTitle_("🎤")
 
     def openDashboard_(self, _sender):
-        import subprocess
         subprocess.Popen(["open", "http://localhost:8421"])
 
     def _warn(self, reason: str):
@@ -100,9 +118,8 @@ class _Delegate(NSObject):
             "secure_input": "Secure input active — injection blocked",
             "password_field": "Password field — injection skipped",
         }.get(reason, "Injection blocked")
-        self._status_item.button().setTitle_(f"⚠️ {label[:20]}")
+        self._status_item.button().setTitle_(f"⚠️ {label[:35]}")
         # Reset after 2s
-        import threading
         threading.Timer(2.0, lambda: self._status_item.button().setTitle_("🎤")).start()
 
 
