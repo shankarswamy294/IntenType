@@ -3,6 +3,7 @@ import subprocess
 import threading
 from datetime import datetime, timezone
 
+import objc
 from AppKit import NSApplication, NSObject, NSStatusBar, NSVariableStatusItemLength
 
 from daemon import (
@@ -49,6 +50,7 @@ class _Delegate(NSObject):
             on_up=self._on_record_stop,
         )
 
+    @objc.python_method
     def _on_record_start(self):
         with self._state_lock:
             if self._state != "IDLE":
@@ -64,6 +66,7 @@ class _Delegate(NSObject):
         self._status_item.button().setTitle_("🔴")
         self._audio.start()
 
+    @objc.python_method
     def _on_record_stop(self):
         with self._state_lock:
             if self._state != "RECORDING":
@@ -82,6 +85,7 @@ class _Delegate(NSObject):
             self._loop,
         )
 
+    @objc.python_method
     async def _process(self, audio_data, ctx: dict):
         try:
             raw = self._asr.transcribe(audio_data)
@@ -102,10 +106,10 @@ class _Delegate(NSObject):
             print(f"[IntenType] pipeline error: {exc}")
         finally:
             self.performSelectorOnMainThread_withObject_waitUntilDone_(
-                "_reset_to_idle_:", None, False
+                "resetToIdle:", None, False
             )
 
-    def _reset_to_idle_(self, _):
+    def resetToIdle_(self, _):
         with self._state_lock:
             self._state = "IDLE"
         self._status_item.button().setTitle_("🎤")
@@ -113,6 +117,7 @@ class _Delegate(NSObject):
     def openDashboard_(self, _sender):
         subprocess.Popen(["open", "http://localhost:8421"])
 
+    @objc.python_method
     def _warn(self, reason: str):
         label = {
             "secure_input": "Secure input active — injection blocked",
