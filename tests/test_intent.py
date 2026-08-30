@@ -18,7 +18,7 @@ def test_rewrite_calls_gpt_with_tone(tmp_path):
          patch("daemon.settings.SETTINGS_PATH", tmp_path / "settings.json"), \
          patch("daemon.settings.APP_SUPPORT", tmp_path):
         from daemon import settings, intent
-        import importlib; importlib.reload(settings); importlib.reload(intent)
+        import importlib; importlib.reload(intent)
         settings.save({
             "openai_api_key": "sk-test",
             "whisper_model": "small.en",
@@ -41,7 +41,7 @@ def test_rewrite_falls_back_to_raw_when_no_api_key(tmp_path):
          patch("daemon.settings.SETTINGS_PATH", tmp_path / "settings.json"), \
          patch("daemon.settings.APP_SUPPORT", tmp_path):
         from daemon import settings, intent
-        import importlib; importlib.reload(settings); importlib.reload(intent)
+        import importlib; importlib.reload(intent)
         # settings.json doesn't exist → key is ""
         result = intent.rewrite("um hello there", "Mail")
 
@@ -56,7 +56,7 @@ def test_rewrite_uses_formal_tone_for_mail(tmp_path):
          patch("daemon.settings.SETTINGS_PATH", tmp_path / "settings.json"), \
          patch("daemon.settings.APP_SUPPORT", tmp_path):
         from daemon import settings, intent
-        import importlib; importlib.reload(settings); importlib.reload(intent)
+        import importlib; importlib.reload(intent)
         settings.save({
             "openai_api_key": "sk-test",
             "whisper_model": "small.en",
