@@ -138,6 +138,7 @@ class _Delegate(NSObject):
         alert.setAccessoryView_(field)
         alert.window().setInitialFirstResponder_(field)
 
+        NSApplication.sharedApplication().activateIgnoringOtherApps_(True)
         if alert.runModal() == NSAlertFirstButtonReturn:
             key = field.stringValue().strip()
             if key:
