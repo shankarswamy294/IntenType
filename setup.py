@@ -1,32 +1,39 @@
-from setuptools import setup
 import os
+from setuptools import setup
 
 APP = ["daemon/main.py"]
-DIST_DIR = os.path.join("dashboard", "dist")
-DATA_FILES = [("dist", [os.path.join(DIST_DIR, f) for f in os.listdir(DIST_DIR)])]
 
 OPTIONS = {
     "argv_emulation": False,
+    "iconfile": "assets/icon.icns" if os.path.exists("assets/icon.icns") else None,
+    "entitlements_file": "entitlements.plist",
+    "codesign_identity": os.environ.get("CODESIGN_IDENTITY", "-"),
     "plist": {
         "LSUIElement": True,
         "CFBundleName": "IntenType",
         "CFBundleDisplayName": "IntenType",
         "CFBundleIdentifier": "com.intentype.app",
-        "NSMicrophoneUsageDescription": "Required to record audio for voice typing.",
-        "NSAccessibilityUsageDescription": "Required to read cursor focus and inject text.",
+        "CFBundleVersion": os.environ.get("APP_VERSION", "0.1.0"),
+        "CFBundleShortVersionString": os.environ.get("APP_VERSION", "0.1.0"),
+        "NSMicrophoneUsageDescription": "IntenType records audio while you hold the Right Option key.",
+        "NSAccessibilityUsageDescription": "IntenType reads the focused element to skip password fields.",
+        "NSInputMonitoringUsageDescription": "IntenType listens for the Right Option key to start recording.",
+        "NSHumanReadableCopyright": "© 2025 IntenType",
     },
     "packages": [
-        "fastapi", "uvicorn", "starlette", "pydantic",
-        "sounddevice", "numpy", "faster_whisper",
+        "daemon",
+        "numpy", "sounddevice",
+        "faster_whisper", "tokenizers", "ctranslate2",
         "openai", "httpx", "anyio",
-        "objc", "Cocoa", "Quartz", "AppKit", "CoreFoundation",
+        "objc", "AppKit", "Foundation", "Quartz",
+        "CoreFoundation", "ApplicationServices",
     ],
-    "includes": ["daemon"],
+    "strip": False,
 }
 
 setup(
+    name="IntenType",
     app=APP,
-    data_files=DATA_FILES,
     options={"py2app": OPTIONS},
     setup_requires=["py2app"],
 )

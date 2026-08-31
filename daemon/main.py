@@ -4,7 +4,11 @@ import threading
 from datetime import datetime, timezone
 
 import objc
-from AppKit import NSApplication, NSObject, NSStatusBar, NSVariableStatusItemLength
+from AppKit import (
+    NSApplication, NSObject, NSStatusBar, NSVariableStatusItemLength,
+    NSMenu, NSMenuItem, NSAlert, NSTextField, NSMakeRect,
+    NSAlertFirstButtonReturn,
+)
 
 from daemon import (
     hotkey as hotkey_mod,
@@ -14,9 +18,11 @@ from daemon import (
     injector,
     context,
     settings,
-    server,
+    history,
 )
 from daemon.overlay import RecordingOverlay
+
+_WHISPER_MODELS = ["tiny.en", "base.en", "small.en", "medium.en"]
 
 
 class _Delegate(NSObject):
@@ -27,7 +33,6 @@ class _Delegate(NSObject):
     def _setup(self):
         s = settings.load()
 
-        # Load ASR model once
         self._asr = asr_mod.ASR(s.get("whisper_model", "small.en"))
         self._audio = audio_mod.AudioCapture()
         self._state = "IDLE"
@@ -35,29 +40,117 @@ class _Delegate(NSObject):
         self._ctx: dict = {"app": "Unknown", "safe": True, "reason": None}
         self._overlay = RecordingOverlay()
 
-        # Async event loop for LLM calls (runs in background thread)
         self._loop = asyncio.new_event_loop()
         threading.Thread(target=self._loop.run_forever, daemon=True).start()
 
-        # Menubar icon
         self._status_item = (
             NSStatusBar.systemStatusBar().statusItemWithLength_(NSVariableStatusItemLength)
         )
         self._status_item.button().setTitle_("🎤")
-        self._status_item.button().setAction_("openDashboard:")
-        self._status_item.button().setTarget_(self)
+        self._build_menu()
 
-        # FastAPI server
-        server.start(port=8421)
-
-        # Hotkey tap (must happen after run loop is active)
         self._tap = hotkey_mod.create_event_tap(
             on_down=self._on_record_start,
             on_up=self._on_record_stop,
         )
+
+    @objc.python_method
+    def _build_menu(self):
+        s = settings.load()
+        current_model = s.get("whisper_model", "small.en")
+
+        menu = NSMenu.alloc().init()
+
+        # API key
+        key_item = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
+            "Set API Key…", "setApiKey:", ""
+        )
+        key_item.setTarget_(self)
+        menu.addItem_(key_item)
+
+        menu.addItem_(NSMenuItem.separatorItem())
+
+        # Whisper model submenu
+        model_item = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
+            "Whisper Model", None, ""
+        )
+        model_menu = NSMenu.alloc().init()
+        for m in _WHISPER_MODELS:
+            mi = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
+                m, "selectModel:", ""
+            )
+            mi.setTarget_(self)
+            mi.setRepresentedObject_(m)
+            if m == current_model:
+                mi.setState_(1)
+            model_menu.addItem_(mi)
+        model_item.setSubmenu_(model_menu)
+        menu.addItem_(model_item)
+
+        menu.addItem_(NSMenuItem.separatorItem())
+
+        # History
+        hist_item = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
+            "Open History", "openHistory:", ""
+        )
+        hist_item.setTarget_(self)
+        menu.addItem_(hist_item)
+
+        menu.addItem_(NSMenuItem.separatorItem())
+
+        # Quit
+        quit_item = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
+            "Quit IntenType", "terminate:", "q"
+        )
+        quit_item.setTarget_(NSApplication.sharedApplication())
+        menu.addItem_(quit_item)
+
+        self._status_item.setMenu_(menu)
+
+    def setApiKey_(self, _sender):
+        alert = NSAlert.alloc().init()
+        alert.setMessageText_("OpenAI API Key")
+        alert.setInformativeText_(
+            "Enter your key from platform.openai.com/api-keys"
+        )
+        alert.addButtonWithTitle_("Save")
+        alert.addButtonWithTitle_("Cancel")
+
+        field = NSTextField.alloc().initWithFrame_(NSMakeRect(0, 0, 320, 24))
+        s = settings.load()
+        field.setStringValue_(s.get("openai_api_key", ""))
+        field.setPlaceholderString_("sk-...")
+        alert.setAccessoryView_(field)
+        alert.window().setInitialFirstResponder_(field)
+
+        if alert.runModal() == NSAlertFirstButtonReturn:
+            key = field.stringValue().strip()
+            if key:
+                s["openai_api_key"] = key
+                settings.save(s)
+
+    def selectModel_(self, sender):
+        model = sender.representedObject()
+        s = settings.load()
+        s["whisper_model"] = model
+        settings.save(s)
+        # Reload ASR in background
+        def _reload():
+            self._asr = asr_mod.ASR(model)
+        threading.Thread(target=_reload, daemon=True).start()
+        # Rebuild menu to update checkmark
+        self.performSelectorOnMainThread_withObject_waitUntilDone_(
+            "rebuildMenu:", None, False
+        )
+
+    def rebuildMenu_(self, _):
+        self._build_menu()
+
+    def openHistory_(self, _sender):
+        subprocess.Popen(["open", str(history.HISTORY_PATH)])
+
     @objc.python_method
     def _set_title(self, title: str):
-        # Must be called on main thread — use performSelector dispatch
         self.performSelectorOnMainThread_withObject_waitUntilDone_(
             "setMenubarTitle:", title, False
         )
@@ -72,13 +165,11 @@ class _Delegate(NSObject):
                 return
             self._state = "RECORDING"
         self._audio.start()
-        # context.get_context() uses AppKit/AX — must run on main thread
         self.performSelectorOnMainThread_withObject_waitUntilDone_(
             "checkContextAndBeginRecording:", None, True
         )
 
     def checkContextAndBeginRecording_(self, _):
-        import traceback
         try:
             ctx = context.get_context()
             if not ctx["safe"]:
@@ -89,11 +180,9 @@ class _Delegate(NSObject):
                 return
             self._ctx = ctx
             self._status_item.button().setTitle_("🔴")
-            print("[main] calling overlay.show()", flush=True)
             self._overlay.show()
-            print("[main] overlay.show() returned", flush=True)
         except Exception:
-            print("[main] checkContextAndBeginRecording_ EXCEPTION:", flush=True)
+            import traceback
             traceback.print_exc()
 
     @objc.python_method
@@ -123,9 +212,10 @@ class _Delegate(NSObject):
                 return
             with self._state_lock:
                 self._state = "INJECTING"
-            polished = intent.rewrite(raw, ctx["app"])
+            examples = history.get_examples_for_app(ctx["app"])
+            polished = intent.rewrite(raw, ctx["app"], examples=examples)
             injector.inject(polished)
-            server.add_history_entry({
+            history.add({
                 "timestamp": datetime.now(timezone.utc).isoformat(),
                 "app": ctx["app"],
                 "tone": settings.get_tone(ctx["app"])[0],
@@ -133,7 +223,8 @@ class _Delegate(NSObject):
                 "polished": polished,
             })
         except Exception:
-            pass
+            import traceback
+            traceback.print_exc()
         finally:
             self.performSelectorOnMainThread_withObject_waitUntilDone_(
                 "resetToIdle:", None, False
@@ -145,23 +236,19 @@ class _Delegate(NSObject):
         self._overlay.hide()
         self._status_item.button().setTitle_("🎤")
 
-    def openDashboard_(self, _sender):
-        subprocess.Popen(["open", "http://localhost:8421"])
-
     @objc.python_method
     def _warn(self, reason: str):
         label = {
-            "secure_input": "Secure input active — injection blocked",
-            "password_field": "Password field — injection skipped",
+            "secure_input": "Secure input active",
+            "password_field": "Password field — skipped",
         }.get(reason, "Injection blocked")
-        self._status_item.button().setTitle_(f"⚠️ {label[:35]}")
-        # Reset after 2s
+        self._status_item.button().setTitle_(f"⚠️ {label}")
         threading.Timer(2.0, lambda: self._status_item.button().setTitle_("🎤")).start()
 
 
 def run():
     app = NSApplication.sharedApplication()
-    app.setActivationPolicy_(1)  # NSApplicationActivationPolicyAccessory — no Dock icon
+    app.setActivationPolicy_(1)
     delegate = _Delegate.alloc().init()
     app.setDelegate_(delegate)
     app.run()

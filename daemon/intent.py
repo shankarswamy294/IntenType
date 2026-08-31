@@ -20,7 +20,7 @@ _SYSTEM_TEMPLATE = (
 )
 
 
-def rewrite(raw: str, app_name: str) -> str:
+def rewrite(raw: str, app_name: str, examples: list[dict] | None = None) -> str:
     s = settings.load()
     api_key = s.get("openai_api_key", "")
     if not api_key:
@@ -28,19 +28,25 @@ def rewrite(raw: str, app_name: str) -> str:
 
     tone_name, tone_instructions = settings.get_tone(app_name)
     client = OpenAI(api_key=api_key)
+
+    messages: list[dict] = [
+        {
+            "role": "system",
+            "content": _SYSTEM_TEMPLATE.format(
+                tone_name=tone_name,
+                tone_instructions=tone_instructions,
+            ),
+        }
+    ]
+    for ex in (examples or []):
+        messages.append({"role": "user", "content": ex["raw"]})
+        messages.append({"role": "assistant", "content": ex["polished"]})
+    messages.append({"role": "user", "content": raw})
+
     try:
         response = client.chat.completions.create(
             model=REWRITE_MODEL,
-            messages=[
-                {
-                    "role": "system",
-                    "content": _SYSTEM_TEMPLATE.format(
-                        tone_name=tone_name,
-                        tone_instructions=tone_instructions,
-                    ),
-                },
-                {"role": "user", "content": raw},
-            ],
+            messages=messages,
             max_tokens=500,
             temperature=0.3,
         )
