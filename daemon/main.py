@@ -78,16 +78,23 @@ class _Delegate(NSObject):
         )
 
     def checkContextAndBeginRecording_(self, _):
-        ctx = context.get_context()
-        if not ctx["safe"]:
-            self._audio.stop()
-            self._warn(ctx["reason"])
-            with self._state_lock:
-                self._state = "IDLE"
-            return
-        self._ctx = ctx
-        self._status_item.button().setTitle_("🔴")
-        self._overlay.show()
+        import traceback
+        try:
+            ctx = context.get_context()
+            if not ctx["safe"]:
+                self._audio.stop()
+                self._warn(ctx["reason"])
+                with self._state_lock:
+                    self._state = "IDLE"
+                return
+            self._ctx = ctx
+            self._status_item.button().setTitle_("🔴")
+            print("[main] calling overlay.show()", flush=True)
+            self._overlay.show()
+            print("[main] overlay.show() returned", flush=True)
+        except Exception:
+            print("[main] checkContextAndBeginRecording_ EXCEPTION:", flush=True)
+            traceback.print_exc()
 
     @objc.python_method
     def _on_record_stop(self):

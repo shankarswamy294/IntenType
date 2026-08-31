@@ -7,8 +7,11 @@ def get_context() -> dict:
     frontmost = NSWorkspace.sharedWorkspace().frontmostApplication()
     app_name = frontmost.localizedName() if frontmost else "Unknown"
 
-    if Quartz.CGSIsSecureEventInputEnabled():
-        return {"app": app_name, "safe": False, "reason": "secure_input"}
+    try:
+        if Quartz.CGSIsSecureEventInputEnabled():
+            return {"app": app_name, "safe": False, "reason": "secure_input"}
+    except AttributeError:
+        pass  # Not available on this PyObjC version — skip secure-input check
 
     system_el = Quartz.AXUIElementCreateSystemWide()
     err, focused = Quartz.AXUIElementCopyAttributeValue(
