@@ -6,20 +6,24 @@ _RIGHT_OPTION = 0x3D
 
 
 def create_event_tap(on_down: Callable, on_up: Callable):
+    # Right Option is a modifier key — it fires kCGEventFlagsChanged, not KeyDown/KeyUp.
+    # Detect press/release by checking keycode + whether Alt flag is now set or cleared.
+    _ALT_FLAG = Quartz.kCGEventFlagMaskAlternate
+
     def _callback(proxy, event_type, event, refcon):
+        if event_type != Quartz.kCGEventFlagsChanged:
+            return event
         keycode = Quartz.CGEventGetIntegerValueField(event, Quartz.kCGKeyboardEventKeycode)
         if keycode != _RIGHT_OPTION:
             return event
-        if event_type == Quartz.kCGEventKeyDown:
+        flags = Quartz.CGEventGetFlags(event)
+        if flags & _ALT_FLAG:
             on_down()
-        elif event_type == Quartz.kCGEventKeyUp:
+        else:
             on_up()
         return event
 
-    mask = (
-        Quartz.CGEventMaskBit(Quartz.kCGEventKeyDown)
-        | Quartz.CGEventMaskBit(Quartz.kCGEventKeyUp)
-    )
+    mask = Quartz.CGEventMaskBit(Quartz.kCGEventFlagsChanged)
     tap = Quartz.CGEventTapCreate(
         Quartz.kCGHIDEventTap,
         Quartz.kCGHeadInsertEventTap,

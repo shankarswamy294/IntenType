@@ -20,6 +20,10 @@ from daemon import (
 
 class _Delegate(NSObject):
     def applicationDidFinishLaunching_(self, _notification):
+        self._setup()
+
+    @objc.python_method
+    def _setup(self):
         s = settings.load()
 
         # Load ASR model once
@@ -49,7 +53,6 @@ class _Delegate(NSObject):
             on_down=self._on_record_start,
             on_up=self._on_record_stop,
         )
-
     @objc.python_method
     def _on_record_start(self):
         with self._state_lock:
