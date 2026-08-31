@@ -1,6 +1,11 @@
 from openai import OpenAI
 from daemon import settings
 
+# Model used for intent rewriting. Override via INTENTYPE_MODEL env var.
+import os
+REWRITE_MODEL = os.environ.get("INTENTYPE_MODEL", "gpt-4o-mini-2024-07-18")
+# Set INTENTYPE_MODEL=gpt-5.6-luna to use GPT-5.6 Luna when available on your key.
+
 _SYSTEM_TEMPLATE = (
     'You are a voice-to-text assistant. Clean up the transcript — remove filler words '
     '("um", "uh", "like", "you know"), fix grammar and punctuation, and output natural '
@@ -20,7 +25,7 @@ def rewrite(raw: str, app_name: str) -> str:
     client = OpenAI(api_key=api_key)
     try:
         response = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model=REWRITE_MODEL,
             messages=[
                 {
                     "role": "system",

@@ -16,6 +16,7 @@ from daemon import (
     settings,
     server,
 )
+from daemon.overlay import RecordingOverlay
 
 
 class _Delegate(NSObject):
@@ -32,6 +33,7 @@ class _Delegate(NSObject):
         self._state = "IDLE"
         self._state_lock = threading.Lock()
         self._ctx: dict = {"app": "Unknown", "safe": True, "reason": None}
+        self._overlay = RecordingOverlay()
 
         # Async event loop for LLM calls (runs in background thread)
         self._loop = asyncio.new_event_loop()
@@ -93,6 +95,7 @@ class _Delegate(NSObject):
             return
         self._ctx = ctx
         self._status_item.button().setTitle_("🔴")
+        self._overlay.show()
 
     @objc.python_method
     def _on_record_stop(self):
@@ -151,7 +154,8 @@ class _Delegate(NSObject):
     def resetToIdle_(self, _):
         with self._state_lock:
             self._state = "IDLE"
-        self._status_item.button().setTitle_("🎤")  # already on main thread
+        self._overlay.hide()
+        self._status_item.button().setTitle_("🎤")
 
     def openDashboard_(self, _sender):
         subprocess.Popen(["open", "http://localhost:8421"])
