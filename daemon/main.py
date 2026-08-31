@@ -54,6 +54,23 @@ class _Delegate(NSObject):
             on_up=self._on_record_stop,
         )
 
+        # Minimal main menu so Cmd+V works in dialogs
+        main_menu = NSMenu.alloc().init()
+        edit_item = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_("Edit", None, "")
+        edit_menu = NSMenu.alloc().initWithTitle_("Edit")
+        for title, action, key in [
+            ("Cut", "cut:", "x"),
+            ("Copy", "copy:", "c"),
+            ("Paste", "paste:", "v"),
+            ("Select All", "selectAll:", "a"),
+        ]:
+            edit_menu.addItem_(
+                NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(title, action, key)
+            )
+        edit_item.setSubmenu_(edit_menu)
+        main_menu.addItem_(edit_item)
+        NSApplication.sharedApplication().setMainMenu_(main_menu)
+
     @objc.python_method
     def _build_menu(self):
         s = settings.load()
