@@ -1,65 +1,84 @@
+import math
 import objc
-import threading
 from AppKit import (
     NSPanel, NSView, NSColor, NSBezierPath, NSScreen, NSTimer,
-    NSMakeRect, NSFont, NSAttributedString, NSMutableParagraphStyle,
-    NSFontAttributeName, NSForegroundColorAttributeName,
-    NSParagraphStyleAttributeName, NSCenterTextAlignment,
-    NSNonactivatingPanelMask, NSBorderlessWindowMask,
+    NSMakeRect, NSNonactivatingPanelMask, NSBorderlessWindowMask,
     NSWindowCollectionBehaviorCanJoinAllSpaces,
     NSWindowCollectionBehaviorStationary,
     NSWindowCollectionBehaviorIgnoresCycle,
 )
 
-_PANEL_W = 220
-_PANEL_H = 52
-_DOT_R = 7
-_CORNER = 14
+_PANEL_W = 240
+_PANEL_H = 56
+_CORNER = 28
+_DOT_R = 6
+
+_NUM_BARS = 14
+_BAR_W = 5
+_BAR_GAP = 6
+_BAR_MAX_H = 30
+_BAR_MIN_H = 5
+
+# Pre-computed phase offsets so each bar oscillates independently
+_PHASES = [i * (2 * math.pi / _NUM_BARS) for i in range(_NUM_BARS)]
+
+# Center dot + waveform together inside the pill
+_WAVE_W = _NUM_BARS * _BAR_W + (_NUM_BARS - 1) * _BAR_GAP
+_DOT_GAP = 10                                          # gap between dot and first bar
+_CONTENT_W = _DOT_R * 2 + _DOT_GAP + _WAVE_W          # total content width
+_LEFT = (_PANEL_W - _CONTENT_W) / 2                   # left margin to center it
+_DOT_CX = _LEFT + _DOT_R                               # dot center x
+_WAVE_X = _LEFT + _DOT_R * 2 + _DOT_GAP               # waveform start x
 
 
 class _RecordingView(NSView):
 
     @objc.python_method
     def _setup(self):
-        self._alpha = 1.0
-        self._fading_in = False
+        self._t = 0.0
 
     def drawRect_(self, rect):
-        print("[overlay] drawRect_ called", flush=True)
-        # Pill background
-        NSColor.colorWithCalibratedRed_green_blue_alpha_(0.1, 0.1, 0.1, 0.92).set()
+        # Dark pill
+        NSColor.colorWithCalibratedRed_green_blue_alpha_(0.08, 0.08, 0.08, 0.96).set()
         pill = NSBezierPath.bezierPathWithRoundedRect_xRadius_yRadius_(
             NSMakeRect(0, 0, _PANEL_W, _PANEL_H), _CORNER, _CORNER
         )
         pill.fill()
 
-        # Pulsing red dot
-        cx = 20 + _DOT_R
+        # Subtle border
+        NSColor.colorWithCalibratedWhite_alpha_(1.0, 0.18).set()
+        border = NSBezierPath.bezierPathWithRoundedRect_xRadius_yRadius_(
+            NSMakeRect(0.75, 0.75, _PANEL_W - 1.5, _PANEL_H - 1.5), _CORNER, _CORNER
+        )
+        border.setLineWidth_(1.5)
+        border.stroke()
+
+        # Red dot
         cy = _PANEL_H / 2
-        NSColor.colorWithCalibratedRed_green_blue_alpha_(
-            0.95, 0.15, 0.15, self._alpha
-        ).set()
+        NSColor.colorWithCalibratedRed_green_blue_alpha_(0.95, 0.18, 0.18, 1.0).set()
         dot = NSBezierPath.bezierPath()
         dot.appendBezierPathWithOvalInRect_(
-            NSMakeRect(cx - _DOT_R, cy - _DOT_R, _DOT_R * 2, _DOT_R * 2)
+            NSMakeRect(_DOT_CX - _DOT_R, cy - _DOT_R, _DOT_R * 2, _DOT_R * 2)
         )
         dot.fill()
 
-        # "Recording…" label
-        para = NSMutableParagraphStyle.alloc().init()
-        para.setAlignment_(NSCenterTextAlignment)
-        attrs = {
-            NSFontAttributeName: NSFont.systemFontOfSize_(14),
-            NSForegroundColorAttributeName: NSColor.whiteColor(),
-            NSParagraphStyleAttributeName: para,
-        }
-        label_rect = NSMakeRect(36, (_PANEL_H - 18) / 2, _PANEL_W - 48, 18)
-        NSAttributedString.alloc().initWithString_attributes_(
-            "Recording…", attrs
-        ).drawInRect_(label_rect)
+        # Waveform bars
+        NSColor.colorWithCalibratedWhite_alpha_(1.0, 0.92).set()
+        t = self._t
+        for i in range(_NUM_BARS):
+            # Each bar oscillates at slightly different speed + phase
+            wave = 0.5 + 0.5 * math.sin(t * 4.5 + _PHASES[i])
+            h = _BAR_MIN_H + (_BAR_MAX_H - _BAR_MIN_H) * wave
+            x = _WAVE_X + i * (_BAR_W + _BAR_GAP)
+            y = (cy) - h / 2
+            r = _BAR_W / 2
+            bar = NSBezierPath.bezierPathWithRoundedRect_xRadius_yRadius_(
+                NSMakeRect(x, y, _BAR_W, h), r, r
+            )
+            bar.fill()
 
     def tick_(self, _timer):
-        self._alpha = 0.25 if self._alpha > 0.5 else 1.0
+        self._t += 0.07
         self.setNeedsDisplay_(True)
 
 
@@ -71,7 +90,6 @@ class RecordingOverlay:
         sh = screen.frame().size.height
         x = (sw - _PANEL_W) / 2
         y = sh - _PANEL_H - 24
-        print(f"[overlay] screen={sw}x{sh}  panel at ({x},{y})", flush=True)
 
         panel = NSPanel.alloc().initWithContentRect_styleMask_backing_defer_(
             NSMakeRect(x, y, _PANEL_W, _PANEL_H),
@@ -79,7 +97,7 @@ class RecordingOverlay:
             2,
             False,
         )
-        panel.setLevel_(101)  # NSPopUpMenuWindowLevel
+        panel.setLevel_(101)
         panel.setOpaque_(False)
         panel.setBackgroundColor_(NSColor.clearColor())
         panel.setHasShadow_(True)
@@ -101,12 +119,10 @@ class RecordingOverlay:
         self._view = view
 
     def show(self):
-        print(f"[overlay] show() called, panel={self._panel}", flush=True)
         self._panel.setAlphaValue_(1.0)
         self._panel.orderFrontRegardless()
-        print(f"[overlay] alpha={self._panel.alphaValue()} level={self._panel.level()}", flush=True)
         self._timer = NSTimer.scheduledTimerWithTimeInterval_target_selector_userInfo_repeats_(
-            0.55, self._view, "tick:", None, True
+            0.05, self._view, "tick:", None, True
         )
 
     def hide(self):
