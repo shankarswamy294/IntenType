@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 60" width="220" height="60">
+  <rect width="220" height="60" rx="8" fill="#0a0a0b"/>
+  <text x="16" y="42" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif" font-size="32" font-weight="700" letter-spacing="-1" fill="#f5f5f7">Inten</text>
+  <text x="107" y="42" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif" font-size="32" font-weight="700" letter-spacing="-1" fill="#e8312a">Type</text>
+</svg>

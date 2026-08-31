@@ -7,38 +7,29 @@ REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$REPO_ROOT"
 
 echo "==> Building IntenType $VERSION"
-
-# Clean previous build
 rm -rf build dist
 
-# Build .app
-python setup.py py2app 2>&1
+PYTHON="${PYTHON:-.venv/bin/python}"
+"$PYTHON" setup.py py2app 2>&1
 
 APP="dist/IntenType.app"
-if [ ! -d "$APP" ]; then
-  echo "ERROR: $APP not found after py2app build"
-  exit 1
-fi
+[ -d "$APP" ] || { echo "ERROR: $APP not found"; exit 1; }
 
-echo "==> Creating IntenType.dmg"
+echo "==> Creating IntenType-${VERSION}.dmg"
 DMG="dist/IntenType-${VERSION}.dmg"
+TMP="dist/tmp_rw.dmg"
+MOUNT="/Volumes/IntenType_Install"
 
-# Create a temporary writable image
-TMP_DMG="dist/tmp_rw.dmg"
-hdiutil create -size 300m -fs HFS+ -volname "IntenType" "$TMP_DMG" -ov -quiet
+rm -f "$TMP" "$DMG"
 
-# Mount it
-MOUNT="$(hdiutil attach "$TMP_DMG" -quiet -mountpoint /Volumes/IntenType_build && echo /Volumes/IntenType_build)"
-MOUNT="/Volumes/IntenType_build"
-hdiutil attach "$TMP_DMG" -mountpoint "$MOUNT" -quiet
+hdiutil create -size 400m -fs HFS+ -volname "IntenType" "$TMP" -ov -quiet
+hdiutil attach "$TMP" -mountpoint "$MOUNT" -quiet
 
-# Copy app + Applications symlink
 cp -R "$APP" "$MOUNT/"
 ln -s /Applications "$MOUNT/Applications"
 
-# Unmount and convert to compressed read-only
 hdiutil detach "$MOUNT" -quiet
-hdiutil convert "$TMP_DMG" -format UDZO -o "$DMG" -quiet
-rm "$TMP_DMG"
+hdiutil convert "$TMP" -format UDZO -o "$DMG" -quiet
+rm "$TMP"
 
-echo "==> Done: $DMG"
+echo "==> Done: $DMG ($(du -sh "$DMG" | cut -f1))"

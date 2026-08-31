@@ -6,8 +6,6 @@ APP = ["daemon/main.py"]
 OPTIONS = {
     "argv_emulation": False,
     "iconfile": "assets/icon.icns" if os.path.exists("assets/icon.icns") else None,
-    "entitlements_file": "entitlements.plist",
-    "codesign_identity": os.environ.get("CODESIGN_IDENTITY", "-"),
     "plist": {
         "LSUIElement": True,
         "CFBundleName": "IntenType",
