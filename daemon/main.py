@@ -107,6 +107,17 @@ class _Delegate(NSObject):
 
         self._status_item.setMenu_(menu)
 
+        # Prompt for API key on first launch
+        if not settings.load().get("openai_api_key"):
+            from AppKit import NSTimer
+            NSTimer.scheduledTimerWithTimeInterval_target_selector_userInfo_repeats_(
+                0.5, self, "promptApiKeyIfMissing:", None, False
+            )
+
+    def promptApiKeyIfMissing_(self, _):
+        if not settings.load().get("openai_api_key"):
+            self.setApiKey_(None)
+
     def setApiKey_(self, _sender):
         alert = NSAlert.alloc().init()
         alert.setMessageText_("Connect to OpenAI")
