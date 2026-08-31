@@ -31,7 +31,7 @@ class _Delegate(NSObject):
         self._audio = audio_mod.AudioCapture()
         self._state = "IDLE"
         self._state_lock = threading.Lock()
-        self._ctx: dict = {}
+        self._ctx: dict = {"app": "Unknown", "safe": True, "reason": None}
 
         # Async event loop for LLM calls (runs in background thread)
         self._loop = asyncio.new_event_loop()
@@ -54,50 +54,85 @@ class _Delegate(NSObject):
             on_up=self._on_record_stop,
         )
     @objc.python_method
+    def _log(self, msg: str):
+        open("/tmp/it_pipeline.log", "a").write(msg + "\n")
+
+    @objc.python_method
+    def _set_title(self, title: str):
+        # Must be called on main thread — use performSelector dispatch
+        self.performSelectorOnMainThread_withObject_waitUntilDone_(
+            "setMenubarTitle:", title, False
+        )
+
+    def setMenubarTitle_(self, title: str):
+        self._status_item.button().setTitle_(title)
+
+    @objc.python_method
     def _on_record_start(self):
+        self._log("[1] _on_record_start")
         with self._state_lock:
             if self._state != "IDLE":
+                self._log(f"[1] ignored — state={self._state}")
                 return
             self._state = "RECORDING"
+        self._audio.start()
+        self._log("[2] audio started")
+        # context.get_context() uses AppKit/AX — must run on main thread
+        self.performSelectorOnMainThread_withObject_waitUntilDone_(
+            "checkContextAndBeginRecording:", None, True
+        )
+
+    def checkContextAndBeginRecording_(self, _):
         ctx = context.get_context()
+        self._log(f"[3] context={ctx}")
         if not ctx["safe"]:
+            self._audio.stop()
             self._warn(ctx["reason"])
             with self._state_lock:
                 self._state = "IDLE"
             return
         self._ctx = ctx
         self._status_item.button().setTitle_("🔴")
-        self._audio.start()
 
     @objc.python_method
     def _on_record_stop(self):
+        self._log("[4] _on_record_stop")
         with self._state_lock:
             if self._state != "RECORDING":
+                self._log(f"[4] ignored — state={self._state}")
                 return
             self._state = "TRANSCRIBING"
+        ctx = dict(self._ctx)
         try:
             audio_data = self._audio.stop()
+            self._log(f"[5] audio stopped, samples={len(audio_data)}")
         except Exception as exc:
-            print(f"[IntenType] audio capture error: {exc}")
+            self._log(f"[5] audio error: {exc}")
             with self._state_lock:
                 self._state = "IDLE"
-            self._status_item.button().setTitle_("🎤")
+            self._set_title("🎤")
             return
         asyncio.run_coroutine_threadsafe(
-            self._process(audio_data, dict(self._ctx)),
+            self._process(audio_data, ctx),
             self._loop,
         )
 
     @objc.python_method
     async def _process(self, audio_data, ctx: dict):
         try:
+            self._log("[6] transcribing...")
             raw = self._asr.transcribe(audio_data)
+            self._log(f"[7] raw={repr(raw)}")
             if not raw:
+                self._log("[7] empty transcript — aborting")
                 return
             with self._state_lock:
                 self._state = "INJECTING"
+            self._log("[8] rewriting...")
             polished = intent.rewrite(raw, ctx["app"])
+            self._log(f"[9] polished={repr(polished)}")
             injector.inject(polished)
+            self._log("[10] injected")
             server.add_history_entry({
                 "timestamp": datetime.now(timezone.utc).isoformat(),
                 "app": ctx["app"],
@@ -106,7 +141,8 @@ class _Delegate(NSObject):
                 "polished": polished,
             })
         except Exception as exc:
-            print(f"[IntenType] pipeline error: {exc}")
+            import traceback
+            self._log(f"[ERR] {exc}\n{traceback.format_exc()}")
         finally:
             self.performSelectorOnMainThread_withObject_waitUntilDone_(
                 "resetToIdle:", None, False
@@ -115,7 +151,7 @@ class _Delegate(NSObject):
     def resetToIdle_(self, _):
         with self._state_lock:
             self._state = "IDLE"
-        self._status_item.button().setTitle_("🎤")
+        self._status_item.button().setTitle_("🎤")  # already on main thread
 
     def openDashboard_(self, _sender):
         subprocess.Popen(["open", "http://localhost:8421"])

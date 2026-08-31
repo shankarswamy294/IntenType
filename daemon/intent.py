@@ -18,19 +18,22 @@ def rewrite(raw: str, app_name: str) -> str:
 
     tone_name, tone_instructions = settings.get_tone(app_name)
     client = OpenAI(api_key=api_key)
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[
-            {
-                "role": "system",
-                "content": _SYSTEM_TEMPLATE.format(
-                    tone_name=tone_name,
-                    tone_instructions=tone_instructions,
-                ),
-            },
-            {"role": "user", "content": raw},
-        ],
-        max_tokens=500,
-        temperature=0.3,
-    )
-    return response.choices[0].message.content.strip()
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {
+                    "role": "system",
+                    "content": _SYSTEM_TEMPLATE.format(
+                        tone_name=tone_name,
+                        tone_instructions=tone_instructions,
+                    ),
+                },
+                {"role": "user", "content": raw},
+            ],
+            max_tokens=500,
+            temperature=0.3,
+        )
+        return response.choices[0].message.content.strip()
+    except Exception:
+        return raw
