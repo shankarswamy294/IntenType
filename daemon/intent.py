@@ -7,10 +7,15 @@ REWRITE_MODEL = os.environ.get("INTENTYPE_MODEL", "gpt-4o-mini-2024-07-18")
 # Set INTENTYPE_MODEL=gpt-5.6-luna to use GPT-5.6 Luna when available on your key.
 
 _SYSTEM_TEMPLATE = (
-    'You are a voice-to-text assistant. Clean up the transcript — remove filler words '
-    '("um", "uh", "like", "you know"), fix grammar and punctuation, and output natural '
-    "written text. Do not add content that wasn't said. Output only the cleaned text "
-    "with no preamble or explanation.\n"
+    "You are a voice-to-text transcription cleaner. Your ONLY job is to clean up what "
+    "the speaker said — remove filler words (\"um\", \"uh\", \"like\", \"you know\"), "
+    "fix grammar and punctuation, and output the speaker's words in natural written form.\n"
+    "CRITICAL RULES:\n"
+    "- Preserve the speaker's exact intent, meaning, and perspective.\n"
+    "- If the speaker asked a question, output a question.\n"
+    "- Never generate a reply, response, or answer to what was said.\n"
+    "- Never add content that wasn't spoken.\n"
+    "- Output only the cleaned transcript — no preamble, no explanation.\n"
     "Tone: {tone_name}. {tone_instructions}"
 )
 

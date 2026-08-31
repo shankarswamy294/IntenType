@@ -25,6 +25,7 @@ class _RecordingView(NSView):
         self._fading_in = False
 
     def drawRect_(self, rect):
+        print("[overlay] drawRect_ called", flush=True)
         # Pill background
         NSColor.colorWithCalibratedRed_green_blue_alpha_(0.1, 0.1, 0.1, 0.92).set()
         pill = NSBezierPath.bezierPathWithRoundedRect_xRadius_yRadius_(
@@ -70,6 +71,7 @@ class RecordingOverlay:
         sh = screen.frame().size.height
         x = (sw - _PANEL_W) / 2
         y = sh - _PANEL_H - 24
+        print(f"[overlay] screen={sw}x{sh}  panel at ({x},{y})", flush=True)
 
         panel = NSPanel.alloc().initWithContentRect_styleMask_backing_defer_(
             NSMakeRect(x, y, _PANEL_W, _PANEL_H),
@@ -99,8 +101,10 @@ class RecordingOverlay:
         self._view = view
 
     def show(self):
+        print(f"[overlay] show() called, panel={self._panel}", flush=True)
         self._panel.setAlphaValue_(1.0)
         self._panel.orderFrontRegardless()
+        print(f"[overlay] alpha={self._panel.alphaValue()} level={self._panel.level()}", flush=True)
         self._timer = NSTimer.scheduledTimerWithTimeInterval_target_selector_userInfo_repeats_(
             0.55, self._view, "tick:", None, True
         )
