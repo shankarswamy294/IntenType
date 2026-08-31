@@ -109,9 +109,13 @@ class _Delegate(NSObject):
 
     def setApiKey_(self, _sender):
         alert = NSAlert.alloc().init()
-        alert.setMessageText_("OpenAI API Key")
+        alert.setMessageText_("Connect to OpenAI")
         alert.setInformativeText_(
-            "Enter your key from platform.openai.com/api-keys"
+            "IntenType uses OpenAI to polish your speech.\n\n"
+            "1. Go to platform.openai.com/api-keys\n"
+            "2. Click \"Create new secret key\"\n"
+            "3. Paste it below\n\n"
+            "Your key is stored locally and never shared."
         )
         alert.addButtonWithTitle_("Save")
         alert.addButtonWithTitle_("Cancel")
@@ -119,7 +123,7 @@ class _Delegate(NSObject):
         field = NSTextField.alloc().initWithFrame_(NSMakeRect(0, 0, 320, 24))
         s = settings.load()
         field.setStringValue_(s.get("openai_api_key", ""))
-        field.setPlaceholderString_("sk-...")
+        field.setPlaceholderString_("sk-proj-...")
         alert.setAccessoryView_(field)
         alert.window().setInitialFirstResponder_(field)
 
