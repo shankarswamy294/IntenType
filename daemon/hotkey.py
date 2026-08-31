@@ -20,10 +20,8 @@ def create_event_tap(on_down: Callable, on_up: Callable):
             return event
         flags = Quartz.CGEventGetFlags(event)
         if flags & _ALT_FLAG:
-            open("/tmp/it_pipeline.log", "a").write("[hotkey] DOWN — starting thread\n")
             threading.Thread(target=on_down, daemon=True).start()
         else:
-            open("/tmp/it_pipeline.log", "a").write("[hotkey] UP — starting thread\n")
             threading.Thread(target=on_up, daemon=True).start()
         return event
 

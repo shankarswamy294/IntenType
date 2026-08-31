@@ -26,7 +26,7 @@ class _RecordingView(NSView):
     def _setup(self):
         self.setWantsLayer_(True)
         bg = self.layer()
-        bg.setBackgroundColor_(NSColor.colorWithWhite_alpha_(0.12, 0.88).CGColor())
+        bg.setBackgroundColor_(NSColor.colorWithWhite_alpha_(0.18, 0.95).CGColor())
         bg.setCornerRadius_(_CORNER)
 
         # Pulsing red dot (CALayer)
@@ -80,7 +80,7 @@ class RecordingOverlay:
             2,  # NSBackingStoreBuffered
             False,
         )
-        panel.setLevel_(25)  # NSFloatingWindowLevel+1, above most HUDs
+        panel.setLevel_(101)  # NSPopUpMenuWindowLevel — floats above all app windows
         panel.setOpaque_(False)
         panel.setBackgroundColor_(NSColor.clearColor())
         panel.setHasShadow_(True)
