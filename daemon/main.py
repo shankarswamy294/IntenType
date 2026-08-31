@@ -138,8 +138,14 @@ class _Delegate(NSObject):
         alert.setAccessoryView_(field)
         alert.window().setInitialFirstResponder_(field)
 
-        NSApplication.sharedApplication().activateIgnoringOtherApps_(True)
-        if alert.runModal() == NSAlertFirstButtonReturn:
+        # Temporarily become a regular app so Cmd+V / typing works in the dialog
+        app = NSApplication.sharedApplication()
+        app.setActivationPolicy_(0)
+        app.activateIgnoringOtherApps_(True)
+        result = alert.runModal()
+        app.setActivationPolicy_(1)
+
+        if result == NSAlertFirstButtonReturn:
             key = field.stringValue().strip()
             if key:
                 s["openai_api_key"] = key
