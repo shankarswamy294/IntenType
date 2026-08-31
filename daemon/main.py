@@ -152,6 +152,8 @@ class _Delegate(NSObject):
         s = settings.load()
         field.setStringValue_(s.get("openai_api_key", ""))
         field.setPlaceholderString_("sk-proj-...")
+        # Scroll to start so user sees beginning of key, not the tail
+        field.currentEditor() and field.currentEditor().setSelectedRange_((0, 0))
         alert.setAccessoryView_(field)
         alert.window().setInitialFirstResponder_(field)
 
