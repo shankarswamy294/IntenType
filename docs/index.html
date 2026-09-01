@@ -541,10 +541,18 @@
       <div class="setup-circle">1</div>
       <div>
         <h3>Download &amp; install</h3>
-        <p>Download <strong>IntenType-0.1.0.dmg</strong> and open it. Inside, double-click <strong>Install.command</strong> — Terminal opens, asks for your Mac password once, and installs the app automatically.</p>
-        <p style="margin-top:10px;font-size:13px;color:var(--muted);background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;line-height:1.6">
-          <strong style="color:var(--white)">Why the password?</strong> The installer removes macOS's Gatekeeper quarantine flag so the app opens without any security warnings. You only do this once.
-        </p>
+        <p>Download <strong>IntenType-0.1.0.dmg</strong>, open it, drag IntenType to <strong>Applications</strong>, then double-click to launch.</p>
+        <div style="margin-top:12px;background:rgba(255,193,7,0.07);border:1px solid rgba(255,193,7,0.2);border-radius:10px;padding:14px 16px;">
+          <p style="font-size:13px;font-weight:600;color:#f5c518;margin-bottom:8px;">⚠️ macOS Gatekeeper warning?</p>
+          <p style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:0">
+            macOS Sequoia blocks unsigned apps. This is expected — IntenType is open source and safe.<br>
+            <strong style="color:var(--white)">Fix in 3 steps:</strong><br>
+            1. Click <strong style="color:var(--white)">Done</strong> on the warning<br>
+            2. Open <strong style="color:var(--white)">System Settings → Privacy &amp; Security</strong> → scroll down<br>
+            3. Click <strong style="color:var(--white)">Open Anyway</strong> next to IntenType → enter your password<br><br>
+            You only do this once. After that, IntenType opens normally.
+          </p>
+        </div>
       </div>
     </div>
     <div class="setup-row reveal reveal-delay-2">

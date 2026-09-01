@@ -58,13 +58,25 @@ Works in **Notes, Slack, Teams, Gmail, VS Code, Terminal, browsers** — anywher
 
 ### Option A — DMG (recommended)
 
-1. [Download `IntenType-*.dmg`](https://github.com/shankarswamy294/IntenType/releases/latest)
-2. Open the DMG
-3. Double-click **`Install.command`** inside the DMG
-4. Terminal opens and asks for your Mac password once — this installs the app and removes the Gatekeeper warning automatically
-5. IntenType launches — the waveform icon appears in your menubar
-6. Enter your [OpenAI API key](https://platform.openai.com/api-keys) when prompted
-7. Grant the 3 permissions when the setup wizard appears
+1. [Download `IntenType-0.1.0.dmg`](https://github.com/shankarswamy294/IntenType/releases/download/v0.1.0/IntenType-0.1.0.dmg)
+2. Open the DMG → drag **IntenType** to **Applications**
+3. Double-click **IntenType** in Applications to launch it
+
+> **⚠️ macOS Gatekeeper warning ("Not Opened")**
+>
+> macOS Sequoia blocks unsigned apps downloaded from the internet. This is expected — IntenType is open source and safe. To allow it:
+>
+> 1. Click **Done** on the warning dialog
+> 2. Open **System Settings → Privacy & Security**
+> 3. Scroll down — you'll see **"IntenType was blocked"**
+> 4. Click **Open Anyway** → enter your Mac password
+> 5. Click **Open** on the final confirmation
+>
+> You only do this once. After that, IntenType opens normally every time.
+
+4. The waveform icon appears in your menubar
+5. Enter your [OpenAI API key](https://platform.openai.com/api-keys) when prompted
+6. Grant the 3 permissions when the setup wizard appears
 
 ### Option B — Run from source
 
