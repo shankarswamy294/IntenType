@@ -12,7 +12,7 @@
   [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
   [![Download](https://img.shields.io/github/v/release/shankarswamy294/IntenType?label=download&color=red)](https://github.com/shankarswamy294/IntenType/releases/latest)
 
-  [**Download for Mac →**](https://github.com/shankarswamy294/IntenType/releases/latest)
+  [**⬇ Download for Mac (v0.1.0)**](https://github.com/shankarswamy294/IntenType/releases/download/v0.1.0/IntenType-0.1.0.dmg)
 
 </div>
 
