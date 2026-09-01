@@ -67,12 +67,6 @@ hdiutil attach "$TMP" -mountpoint "$MOUNT" -quiet
 cp -R "$APP" "$MOUNT/"
 ln -s /Applications "$MOUNT/Applications"
 
-# Bundle the installer script so users can bypass Gatekeeper without Terminal
-cp scripts/Install.command "$MOUNT/Install.command"
-chmod +x "$MOUNT/Install.command"
-# Strip quarantine from the installer script itself
-xattr -d com.apple.quarantine "$MOUNT/Install.command" 2>/dev/null || true
-
 hdiutil detach "$MOUNT" -quiet
 hdiutil convert "$TMP" -format UDZO -o "$DMG" -quiet
 rm "$TMP"
