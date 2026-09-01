@@ -91,10 +91,13 @@
     .hero-glow {
       position: absolute; top: -60px; left: 50%; transform: translateX(-50%);
       width: 1000px; height: 700px;
-      background: radial-gradient(ellipse, rgba(232,49,42,0.08) 0%, transparent 60%);
+      background: radial-gradient(ellipse, rgba(232,49,42,0.22) 0%, rgba(232,49,42,0.06) 45%, transparent 70%);
       pointer-events: none; z-index: 0;
+      animation: glowPulse 6s ease-in-out infinite;
     }
     .hero > *:not(.hero-glow) { position: relative; z-index: 1; }
+
+    nav { animation: navIn .5s cubic-bezier(.22,1,.36,1) both; }
 
     .eyebrow {
       display: inline-flex; align-items: center; gap: 8px;
@@ -102,25 +105,33 @@
       padding: 5px 14px; border-radius: 20px;
       font-size: 12px; font-weight: 500; color: var(--muted); letter-spacing: .4px;
       margin-bottom: 28px;
+      animation: heroIn .6s .1s cubic-bezier(.22,1,.36,1) both;
     }
     .eyebrow-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--red); animation: blink 2s ease infinite; }
-    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.25} }
-    @keyframes fadeDown { from{opacity:0;transform:translateY(-12px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes blink      { 0%,100%{opacity:1} 50%{opacity:.25} }
+    @keyframes heroIn     { from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes glowPulse  { 0%,100%{opacity:.7;transform:translateX(-50%) scale(1)} 50%{opacity:1;transform:translateX(-50%) scale(1.12)} }
+    @keyframes floatPill  { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+    @keyframes gradShift  { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+    @keyframes navIn      { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
 
     h1 {
       font-size: clamp(46px, 7vw, 88px);
       font-weight: 700; letter-spacing: -3px; line-height: 1.04;
       max-width: 800px; margin-bottom: 24px;
+      animation: heroIn .7s .22s cubic-bezier(.22,1,.36,1) both;
     }
     h1 em { font-style: normal; color: var(--red); }
     .hero-sub {
       font-size: clamp(16px, 2vw, 19px);
       color: var(--muted); max-width: 480px; line-height: 1.7;
       margin-bottom: 44px;
+      animation: heroIn .6s .38s cubic-bezier(.22,1,.36,1) both;
     }
     .hero-actions {
       display: flex; gap: 12px; align-items: center; flex-wrap: wrap; justify-content: center;
       margin-bottom: 48px;
+      animation: heroIn .6s .52s cubic-bezier(.22,1,.36,1) both;
     }
     .btn-primary {
       display: inline-flex; align-items: center; gap: 10px;
@@ -141,11 +152,13 @@
     .compat-note {
       font-size: 12px; color: var(--muted2);
       display: flex; align-items: center; gap: 6px;
+      animation: heroIn .5s .76s cubic-bezier(.22,1,.36,1) both;
     }
 
     /* ── RECORDING PILL ── */
     .pill-wrap {
       margin-bottom: 20px;
+      animation: heroIn .6s .64s cubic-bezier(.22,1,.36,1) both;
     }
     .pill-demo {
       display: inline-flex; align-items: center; gap: 12px;
@@ -153,6 +166,7 @@
       border: 1px solid rgba(255,255,255,0.1);
       border-radius: 32px; padding: 12px 26px;
       box-shadow: 0 8px 40px rgba(0,0,0,.7), 0 0 0 1px rgba(255,255,255,.04);
+      animation: floatPill 3.5s ease-in-out infinite;
     }
     .pill-dot { width: 10px; height: 10px; border-radius: 50%; background: #e8312a; animation: blink 1.4s ease infinite; flex-shrink: 0; }
     .bars { display: flex; align-items: center; gap: 3px; height: 24px; }
@@ -290,8 +304,9 @@
     .cta-glow {
       position: absolute; bottom: -100px; left: 50%; transform: translateX(-50%);
       width: 800px; height: 500px;
-      background: radial-gradient(ellipse, rgba(232,49,42,0.07) 0%, transparent 65%);
+      background: radial-gradient(ellipse, rgba(232,49,42,0.18) 0%, rgba(232,49,42,0.05) 50%, transparent 70%);
       pointer-events: none;
+      animation: glowPulse 5s ease-in-out infinite;
     }
     .cta h2 { font-size: clamp(36px, 5vw, 64px); font-weight: 700; letter-spacing: -2px; margin-bottom: 16px; }
     .cta p { font-size: 16px; color: var(--muted); margin-bottom: 40px; }
@@ -668,6 +683,15 @@
     <a href="https://github.com/shankarswamy294/IntenType">GitHub</a>
     <a href="https://github.com/shankarswamy294/IntenType/releases">Releases</a>
     <a href="https://github.com/shankarswamy294/IntenType/issues">Issues</a>
+    <span style="color:var(--border2)">|</span>
+    <a href="https://www.linkedin.com/in/shankarswamy294/" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/></svg>
+      LinkedIn
+    </a>
+    <a href="mailto:Shankarswamy294@gmail.com" style="display:inline-flex;align-items:center;gap:5px">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 01-2.06 0L2 7"/></svg>
+      Contact
+    </a>
   </div>
 </footer>
 
@@ -721,6 +745,35 @@
     document.querySelector('nav').style.background =
       window.scrollY > 20 ? 'rgba(6,6,7,0.95)' : 'rgba(6,6,7,0.8)';
   });
+
+  /* ── STAT COUNTERS ── */
+  const stats = [
+    { el: document.querySelectorAll('.stat-num')[0], target: 3,   suffix: 's',  prefix: '~', decimals: 0 },
+    { el: document.querySelectorAll('.stat-num')[1], target: 100, suffix: '%',  prefix: '',  decimals: 0 },
+    { el: document.querySelectorAll('.stat-num')[2], target: 0,   suffix: '',   prefix: '$', decimals: 0 },
+  ];
+  const countUp = (el, target, suffix, prefix, decimals) => {
+    const start = performance.now();
+    const duration = 1400;
+    const step = now => {
+      const p = Math.min((now - start) / duration, 1);
+      const ease = 1 - Math.pow(1 - p, 3);
+      const val = (target * ease).toFixed(decimals);
+      el.textContent = prefix + val + suffix;
+      if (p < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  };
+  const statObserver = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const i = [...document.querySelectorAll('.stat-num')].indexOf(e.target);
+        if (i >= 0) countUp(e.target, stats[i].target, stats[i].suffix, stats[i].prefix, stats[i].decimals);
+        statObserver.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.5 });
+  document.querySelectorAll('.stat-num').forEach(el => statObserver.observe(el));
 </script>
 </body>
 </html>
