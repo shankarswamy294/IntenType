@@ -1,233 +1,209 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>IntenType — Voice to text, polished by AI</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>IntenType — Voice typing with AI polish for Mac</title>
+  <meta name="description" content="Hold Right Option, speak, release. IntenType transcribes locally and rewrites with GPT — then types it anywhere on your Mac."/>
   <link rel="icon" type="image/svg+xml" href="logo.svg"/>
-  <meta name="description" content="Hold a key. Speak. IntenType transcribes and polishes your words, then types them anywhere on your Mac." />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --bg: #0a0a0b;
-      --bg2: #111114;
-      --border: rgba(255,255,255,0.08);
+      --bg: #080809;
+      --surface: #111113;
+      --surface2: #18181b;
+      --border: rgba(255,255,255,0.07);
+      --border2: rgba(255,255,255,0.12);
       --red: #e8312a;
-      --white: #f5f5f7;
-      --muted: #86868b;
-      --accent: #e8312a;
+      --red-dim: rgba(232,49,42,0.14);
+      --red-border: rgba(232,49,42,0.28);
+      --white: #f0f0f2;
+      --muted: #888891;
+      --muted2: #5a5a66;
     }
-
+    html { scroll-behavior: smooth; }
     body {
       background: var(--bg);
       color: var(--white);
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
       -webkit-font-smoothing: antialiased;
-      overflow-x: hidden;
+      line-height: 1.5;
     }
 
-    /* NAV */
+    /* ── NAV ── */
     nav {
       position: fixed; top: 0; left: 0; right: 0; z-index: 100;
       display: flex; align-items: center; justify-content: space-between;
-      padding: 18px 48px;
-      background: rgba(10,10,11,0.82);
-      backdrop-filter: blur(20px);
+      padding: 0 48px; height: 60px;
+      background: rgba(8,8,9,0.85);
+      backdrop-filter: blur(24px) saturate(160%);
       border-bottom: 1px solid var(--border);
     }
-    .nav-logo { font-size: 18px; font-weight: 700; letter-spacing: -0.3px; }
-    .nav-logo span { color: var(--red); }
-    .nav-links { display: flex; gap: 32px; }
-    .nav-links a { color: var(--muted); text-decoration: none; font-size: 14px; transition: color .2s; }
+    .nav-logo img { height: 28px; display: block; }
+    .nav-links { display: flex; gap: 28px; }
+    .nav-links a { color: var(--muted); text-decoration: none; font-size: 14px; transition: color .15s; }
     .nav-links a:hover { color: var(--white); }
-    .nav-cta {
-      background: var(--white); color: #000; padding: 9px 20px;
-      border-radius: 980px; font-size: 14px; font-weight: 600;
-      text-decoration: none; transition: opacity .2s;
+    .nav-dl {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--white); color: #000;
+      padding: 8px 18px; border-radius: 8px;
+      font-size: 13px; font-weight: 600; text-decoration: none;
+      transition: background .15s;
     }
-    .nav-cta:hover { opacity: 0.85; }
+    .nav-dl:hover { background: #e0e0e4; }
 
-    /* HERO */
+    /* ── HERO ── */
     .hero {
       min-height: 100vh;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      text-align: center;
-      padding: 120px 24px 80px;
-      position: relative;
+      text-align: center; padding: 120px 24px 80px;
+      position: relative; overflow: hidden;
     }
-    .hero::before {
-      content: '';
-      position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-      width: 800px; height: 600px;
-      background: radial-gradient(ellipse at center, rgba(232,49,42,0.15) 0%, transparent 70%);
+    .hero-glow {
+      position: absolute; top: -100px; left: 50%; transform: translateX(-50%);
+      width: 900px; height: 600px;
+      background: radial-gradient(ellipse, rgba(232,49,42,0.09) 0%, transparent 65%);
       pointer-events: none;
     }
-
-    .badge {
+    .eyebrow {
       display: inline-flex; align-items: center; gap: 8px;
-      background: rgba(232,49,42,0.12); border: 1px solid rgba(232,49,42,0.3);
-      color: #ff6b65; padding: 6px 16px; border-radius: 980px;
-      font-size: 13px; font-weight: 500; margin-bottom: 32px;
+      border: 1px solid var(--border2); background: rgba(255,255,255,0.04);
+      padding: 5px 14px; border-radius: 6px;
+      font-size: 12px; font-weight: 500; color: var(--muted); letter-spacing: .4px;
+      margin-bottom: 28px;
     }
-    .badge-dot { width: 6px; height: 6px; background: var(--red); border-radius: 50%; animation: pulse 1.5s ease-in-out infinite; }
-    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
-
+    .eyebrow-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--red); animation: blink 2s ease infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.25} }
     h1 {
-      font-size: clamp(48px, 7vw, 88px);
-      font-weight: 700;
-      letter-spacing: -2px;
-      line-height: 1.05;
-      max-width: 800px;
-      margin-bottom: 24px;
+      font-size: clamp(44px, 6.5vw, 80px);
+      font-weight: 700; letter-spacing: -2.5px; line-height: 1.06;
+      max-width: 760px; margin-bottom: 22px;
     }
-    h1 em { font-style: normal; color: var(--red); }
-
+    h1 strong { color: var(--red); font-weight: 700; }
     .hero-sub {
-      font-size: clamp(18px, 2.5vw, 22px);
-      color: var(--muted);
-      max-width: 560px;
-      line-height: 1.6;
-      margin-bottom: 48px;
+      font-size: clamp(16px, 2vw, 19px);
+      color: var(--muted); max-width: 500px; line-height: 1.65;
+      margin-bottom: 44px;
     }
-
-    .hero-actions { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; justify-content: center; }
-
-    .btn-primary {
-      background: var(--white); color: #000;
-      padding: 16px 36px; border-radius: 980px;
-      font-size: 16px; font-weight: 600;
-      text-decoration: none; transition: transform .15s, opacity .15s;
+    .hero-actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; justify-content: center; }
+    .btn-dl {
       display: inline-flex; align-items: center; gap: 10px;
+      background: var(--white); color: #000;
+      padding: 14px 28px; border-radius: 10px;
+      font-size: 15px; font-weight: 600; text-decoration: none;
+      box-shadow: 0 1px 3px rgba(0,0,0,.4);
+      transition: transform .12s, background .12s;
     }
-    .btn-primary:hover { transform: scale(1.02); opacity: 0.9; }
-    .btn-secondary {
-      color: var(--muted); font-size: 15px; text-decoration: none;
-      display: inline-flex; align-items: center; gap: 6px;
-      transition: color .2s;
+    .btn-dl:hover { background: #e0e0e4; transform: translateY(-1px); }
+    .btn-gh {
+      display: inline-flex; align-items: center; gap: 8px;
+      color: var(--muted); font-size: 14px; text-decoration: none;
+      border: 1px solid var(--border2); padding: 13px 20px; border-radius: 10px;
+      transition: color .15s, border-color .15s;
     }
-    .btn-secondary:hover { color: var(--white); }
+    .btn-gh:hover { color: var(--white); border-color: rgba(255,255,255,.22); }
+    .compat-note {
+      margin-top: 20px; font-size: 12px; color: var(--muted2);
+      display: flex; align-items: center; gap: 6px;
+    }
 
-    /* OVERLAY DEMO */
-    .overlay-demo {
-      margin: 64px auto 0;
-      display: flex; align-items: center; justify-content: center;
-      gap: 10px;
-      background: rgba(15,15,17,0.9);
-      border: 1px solid var(--border);
-      border-radius: 28px;
-      padding: 14px 28px;
-      width: fit-content;
+    /* ── OVERLAY DEMO ── */
+    .pill-demo {
+      margin: 56px auto 0; width: fit-content;
+      display: flex; align-items: center; gap: 12px;
+      background: rgba(14,14,16,0.95);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 32px; padding: 12px 28px;
+      box-shadow: 0 4px 32px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.04);
     }
-    .demo-dot { width: 12px; height: 12px; background: var(--red); border-radius: 50%; animation: pulse 1.2s ease-in-out infinite; }
-    .demo-bars { display: flex; align-items: center; gap: 4px; height: 28px; }
-    .demo-bar {
-      width: 4px; background: var(--white); border-radius: 2px;
-      animation: wave 1.2s ease-in-out infinite;
+    .pill-dot { width: 11px; height: 11px; border-radius: 50%; background: #e8312a; animation: blink 1.4s ease infinite; }
+    .bars { display: flex; align-items: center; gap: 3px; height: 24px; }
+    .bar { width: 4px; background: rgba(255,255,255,.85); border-radius: 2px; animation: wv 1.1s ease-in-out infinite; }
+    .bar:nth-child(1){animation-delay:0s;}.bar:nth-child(2){animation-delay:.08s;}.bar:nth-child(3){animation-delay:.16s;}
+    .bar:nth-child(4){animation-delay:.24s;}.bar:nth-child(5){animation-delay:.32s;}.bar:nth-child(6){animation-delay:.4s;}
+    .bar:nth-child(7){animation-delay:.48s;}.bar:nth-child(8){animation-delay:.56s;}.bar:nth-child(9){animation-delay:.64s;}
+    .bar:nth-child(10){animation-delay:.72s;}.bar:nth-child(11){animation-delay:.8s;}.bar:nth-child(12){animation-delay:.88s;}
+    .bar:nth-child(13){animation-delay:.96s;}.bar:nth-child(14){animation-delay:1.04s;}
+    @keyframes wv { 0%,100%{height:5px} 50%{height:22px} }
+    .pill-label { font-size: 13px; font-weight: 500; color: rgba(255,255,255,.7); letter-spacing: .1px; }
+
+    /* ── VIDEO ── */
+    .video-section { padding: 80px 24px; max-width: 900px; margin: 0 auto; }
+    .video-wrap {
+      position: relative; width: 100%; aspect-ratio: 16/9;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; overflow: hidden;
     }
-    .demo-bar:nth-child(1)  { animation-delay: 0.0s; }
-    .demo-bar:nth-child(2)  { animation-delay: 0.1s; }
-    .demo-bar:nth-child(3)  { animation-delay: 0.2s; }
-    .demo-bar:nth-child(4)  { animation-delay: 0.3s; }
-    .demo-bar:nth-child(5)  { animation-delay: 0.4s; }
-    .demo-bar:nth-child(6)  { animation-delay: 0.5s; }
-    .demo-bar:nth-child(7)  { animation-delay: 0.6s; }
-    .demo-bar:nth-child(8)  { animation-delay: 0.7s; }
-    .demo-bar:nth-child(9)  { animation-delay: 0.8s; }
-    .demo-bar:nth-child(10) { animation-delay: 0.9s; }
-    .demo-bar:nth-child(11) { animation-delay: 1.0s; }
-    .demo-bar:nth-child(12) { animation-delay: 1.1s; }
-    @keyframes wave {
-      0%, 100% { height: 6px; }
-      50% { height: 26px; }
+    .video-wrap video { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .video-placeholder {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 16px;
     }
-    .demo-label { font-size: 13px; color: var(--muted); margin-left: 4px; }
+    .play-btn {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: var(--white); display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: transform .15s, background .15s;
+      border: none;
+    }
+    .play-btn:hover { transform: scale(1.06); background: #e0e0e4; }
+    .play-btn svg { margin-left: 4px; }
+    .video-placeholder p { font-size: 14px; color: var(--muted); }
+    .video-label { text-align: center; margin-top: 20px; font-size: 13px; color: var(--muted2); }
+
+    /* ── SECTIONS ── */
+    .section { padding: 100px 24px; max-width: 1080px; margin: 0 auto; }
+    .section-eyebrow { font-size: 12px; font-weight: 600; color: var(--red); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px; }
+    .section-h { font-size: clamp(28px, 3.5vw, 44px); font-weight: 700; letter-spacing: -1px; margin-bottom: 12px; }
+    .section-p { font-size: 16px; color: var(--muted); max-width: 480px; line-height: 1.65; margin-bottom: 56px; }
 
     /* HOW IT WORKS */
-    .section { padding: 100px 24px; max-width: 1100px; margin: 0 auto; }
-    .section-label { font-size: 13px; font-weight: 600; color: var(--red); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 16px; }
-    .section-title { font-size: clamp(32px, 4vw, 52px); font-weight: 700; letter-spacing: -1px; margin-bottom: 16px; }
-    .section-sub { font-size: 18px; color: var(--muted); max-width: 560px; line-height: 1.6; margin-bottom: 64px; }
-
-    .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; }
-    .step {
-      background: var(--bg2); border: 1px solid var(--border);
-      border-radius: 20px; padding: 32px;
-      transition: border-color .2s;
-    }
-    .step:hover { border-color: rgba(255,255,255,0.18); }
-    .step-num {
-      width: 40px; height: 40px; border-radius: 12px;
-      background: rgba(232,49,42,0.15); border: 1px solid rgba(232,49,42,0.3);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 16px; font-weight: 700; color: var(--red);
-      margin-bottom: 20px;
-    }
-    .step h3 { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
-    .step p { font-size: 15px; color: var(--muted); line-height: 1.6; }
+    .steps-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+    .step-card { background: var(--surface); padding: 32px 28px; }
+    .step-icon { width: 40px; height: 40px; border-radius: 10px; background: var(--red-dim); border: 1px solid var(--red-border); display: flex; align-items: center; justify-content: center; margin-bottom: 20px; }
+    .step-card h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+    .step-card p { font-size: 14px; color: var(--muted); line-height: 1.6; }
 
     /* FEATURES */
-    .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 24px; overflow: hidden; }
-    .feature { background: var(--bg2); padding: 40px; }
-    .feature-icon { font-size: 28px; margin-bottom: 16px; }
-    .feature h3 { font-size: 20px; font-weight: 600; margin-bottom: 10px; }
-    .feature p { font-size: 15px; color: var(--muted); line-height: 1.6; }
+    .feat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(310px, 1fr)); gap: 16px; }
+    .feat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 28px; transition: border-color .2s; }
+    .feat-card:hover { border-color: var(--border2); }
+    .feat-icon { width: 36px; height: 36px; border-radius: 8px; background: var(--surface2); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; margin-bottom: 16px; }
+    .feat-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+    .feat-card p { font-size: 14px; color: var(--muted); line-height: 1.6; }
 
     /* SETUP */
-    .setup-steps { counter-reset: setup; display: flex; flex-direction: column; gap: 0; }
-    .setup-step {
-      display: flex; gap: 24px; align-items: flex-start;
-      padding: 28px 0;
-      border-bottom: 1px solid var(--border);
-    }
-    .setup-step:last-child { border-bottom: none; }
-    .setup-num {
-      flex-shrink: 0;
-      width: 36px; height: 36px; border-radius: 50%;
-      background: var(--bg2); border: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 14px; font-weight: 600; color: var(--muted);
-    }
-    .setup-step h3 { font-size: 17px; font-weight: 600; margin-bottom: 6px; }
-    .setup-step p { font-size: 15px; color: var(--muted); line-height: 1.6; }
-    .setup-step code {
-      background: rgba(255,255,255,0.08); padding: 2px 8px;
-      border-radius: 6px; font-family: "SF Mono", monospace; font-size: 13px;
-    }
-
-    /* PERMISSIONS */
-    .perm-list { display: flex; flex-direction: column; gap: 12px; }
-    .perm { display: flex; align-items: center; gap: 16px; background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 16px 20px; }
-    .perm-icon { font-size: 22px; }
-    .perm div { font-size: 15px; }
-    .perm div span { color: var(--muted); font-size: 13px; display: block; margin-top: 2px; }
+    .setup-list { display: flex; flex-direction: column; }
+    .setup-row { display: flex; gap: 24px; padding: 28px 0; border-bottom: 1px solid var(--border); }
+    .setup-row:last-child { border-bottom: none; }
+    .setup-circle { flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; background: var(--surface2); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: var(--muted); margin-top: 2px; }
+    .setup-row h3 { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+    .setup-row p { font-size: 14px; color: var(--muted); line-height: 1.65; }
+    code { background: rgba(255,255,255,0.07); padding: 2px 7px; border-radius: 5px; font-family: "SF Mono", "Fira Code", monospace; font-size: 12.5px; }
+    .perm-row { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+    .perm-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; font-size: 14px; }
+    .perm-item span { color: var(--muted); font-size: 13px; margin-left: auto; }
 
     /* CTA */
-    .cta-section {
-      text-align: center; padding: 100px 24px;
-      background: linear-gradient(180deg, transparent, rgba(232,49,42,0.06), transparent);
-    }
-    .cta-section h2 { font-size: clamp(32px, 5vw, 60px); font-weight: 700; letter-spacing: -1.5px; margin-bottom: 20px; }
-    .cta-section p { font-size: 18px; color: var(--muted); margin-bottom: 40px; }
+    .cta { text-align: center; padding: 100px 24px; border-top: 1px solid var(--border); }
+    .cta h2 { font-size: clamp(28px, 4vw, 52px); font-weight: 700; letter-spacing: -1.5px; margin-bottom: 16px; }
+    .cta p { font-size: 16px; color: var(--muted); margin-bottom: 36px; }
 
     /* FOOTER */
-    footer {
-      border-top: 1px solid var(--border);
-      padding: 40px 48px;
-      display: flex; align-items: center; justify-content: space-between;
-      color: var(--muted); font-size: 13px;
-      flex-wrap: wrap; gap: 16px;
-    }
-    footer a { color: var(--muted); text-decoration: none; }
-    footer a:hover { color: var(--white); }
+    footer { padding: 32px 48px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+    .footer-l { display: flex; align-items: center; gap: 12px; }
+    .footer-l img { height: 20px; opacity: .6; }
+    footer p { font-size: 12px; color: var(--muted2); }
+    .footer-links { display: flex; gap: 20px; }
+    .footer-links a { font-size: 12px; color: var(--muted2); text-decoration: none; transition: color .15s; }
+    .footer-links a:hover { color: var(--muted); }
 
-    /* COMPAT note */
-    .compat { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; margin-top: 16px; }
+    /* DIVIDER */
+    .divider { height: 1px; background: var(--border); max-width: 1080px; margin: 0 auto; }
 
-    @media (max-width: 600px) {
-      nav { padding: 16px 20px; }
+    @media(max-width:640px) {
+      nav { padding: 0 20px; }
       .nav-links { display: none; }
-      .hero { padding: 100px 20px 60px; }
     }
   </style>
 </head>
@@ -235,182 +211,251 @@
 
 <!-- NAV -->
 <nav>
-  <a href="#" style="display:flex;align-items:center;text-decoration:none">
-    <img src="logo.svg" alt="IntenType" height="32" style="display:block"/>
-  </a>
+  <a class="nav-logo" href="#"><img src="logo.svg" alt="IntenType"/></a>
   <div class="nav-links">
-    <a href="#how-it-works">How it works</a>
+    <a href="#how">How it works</a>
     <a href="#features">Features</a>
     <a href="#setup">Setup</a>
   </div>
-  <a class="nav-cta" href="https://github.com/shankarswamy294/IntenType/releases/latest/download/IntenType.dmg">
-    Download Free
+  <a class="nav-dl" href="https://github.com/shankarswamy294/IntenType/releases/latest/download/IntenType.dmg">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+    Download
   </a>
 </nav>
 
 <!-- HERO -->
 <section class="hero">
-  <div class="badge">
-    <span class="badge-dot"></span>
-    macOS · Local AI · No subscription
-  </div>
-  <h1>Speak. It types.<br><em>Perfectly.</em></h1>
-  <p class="hero-sub">
-    Hold <strong>Right Option</strong>, say what you mean, release.
-    IntenType transcribes your voice and polishes it with AI —
-    then types it anywhere on your Mac.
-  </p>
+  <div class="hero-glow"></div>
+  <div class="eyebrow"><span class="eyebrow-dot"></span>Free · Open source · macOS</div>
+  <h1>Voice typing that<br>actually sounds <strong>like you</strong></h1>
+  <p class="hero-sub">Hold Right Option, say it out loud, release. IntenType transcribes locally and rewrites with GPT — then types it directly into any app.</p>
   <div class="hero-actions">
-    <a class="btn-primary" href="https://github.com/shankarswamy294/IntenType/releases/latest/download/IntenType.dmg">
-      ↓ &nbsp;Download for Mac
+    <a class="btn-dl" href="https://github.com/shankarswamy294/IntenType/releases/latest/download/IntenType.dmg">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+      Download for Mac — Free
     </a>
-    <a class="btn-secondary" href="https://github.com/shankarswamy294/IntenType">
-      View on GitHub →
+    <a class="btn-gh" href="https://github.com/shankarswamy294/IntenType">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.009-.868-.013-1.703-2.782.604-3.369-1.342-3.369-1.342-.454-1.155-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836a9.59 9.59 0 012.504.337c1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.202 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg>
+      View source
     </a>
   </div>
-
-  <!-- Live waveform demo -->
-  <div class="overlay-demo">
-    <div class="demo-dot"></div>
-    <div class="demo-bars">
-      <div class="demo-bar"></div><div class="demo-bar"></div><div class="demo-bar"></div>
-      <div class="demo-bar"></div><div class="demo-bar"></div><div class="demo-bar"></div>
-      <div class="demo-bar"></div><div class="demo-bar"></div><div class="demo-bar"></div>
-      <div class="demo-bar"></div><div class="demo-bar"></div><div class="demo-bar"></div>
+  <div class="pill-demo">
+    <div class="pill-dot"></div>
+    <div class="bars">
+      <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+      <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+      <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+      <div class="bar"></div><div class="bar"></div>
     </div>
-    <span class="demo-label">Recording…</span>
+    <span class="pill-label">Recording…</span>
   </div>
-  <div class="compat">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
-    macOS 13 Ventura or later · Apple Silicon &amp; Intel
-  </div>
+  <p class="compat-note">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+    macOS 13 or later &nbsp;·&nbsp; Apple Silicon &amp; Intel
+  </p>
 </section>
 
-<!-- HOW IT WORKS -->
-<section class="section" id="how-it-works">
-  <p class="section-label">How it works</p>
-  <h2 class="section-title">Three seconds from thought to text</h2>
-  <p class="section-sub">No clicking, no switching apps, no copy-pasting.</p>
-  <div class="steps">
-    <div class="step">
-      <div class="step-num">1</div>
-      <h3>Hold Right Option</h3>
-      <p>A waveform overlay appears at the top of your screen. IntenType is listening.</p>
-    </div>
-    <div class="step">
-      <div class="step-num">2</div>
-      <h3>Speak naturally</h3>
-      <p>Say it how you'd say it out loud — filler words, fragments, anything. Don't worry about phrasing.</p>
-    </div>
-    <div class="step">
-      <div class="step-num">3</div>
-      <h3>Release &amp; done</h3>
-      <p>Your words are transcribed locally, polished by GPT, and typed directly into whatever is focused — email, Slack, code comments, anywhere.</p>
-    </div>
-  </div>
-</section>
-
-<!-- FEATURES -->
-<section class="section" id="features">
-  <p class="section-label">Features</p>
-  <h2 class="section-title">Built different</h2>
-  <p class="section-sub">Everything you need, nothing you don't.</p>
-  <div class="features">
-    <div class="feature">
-      <div class="feature-icon">🔒</div>
-      <h3>Local transcription</h3>
-      <p>Whisper runs entirely on your Mac. Your audio never leaves your device.</p>
-    </div>
-    <div class="feature">
-      <div class="feature-icon">✨</div>
-      <h3>AI polishing</h3>
-      <p>GPT removes filler words, fixes grammar, and preserves your exact intent and tone.</p>
-    </div>
-    <div class="feature">
-      <div class="feature-icon">🧠</div>
-      <h3>Gets smarter over time</h3>
-      <p>Every use teaches IntenType your style. Future rewrites use your own history as examples.</p>
-    </div>
-    <div class="feature">
-      <div class="feature-icon">⚡</div>
-      <h3>Works everywhere</h3>
-      <p>Injects text into any macOS app — Slack, Mail, VS Code, Terminal, browsers, anything.</p>
-    </div>
-    <div class="feature">
-      <div class="feature-icon">🎙️</div>
-      <h3>One hotkey</h3>
-      <p>Right Option. Hold to record, release to inject. No UI, no friction.</p>
-    </div>
-    <div class="feature">
-      <div class="feature-icon">🆓</div>
-      <h3>Free &amp; open source</h3>
-      <p>No subscription. Bring your own OpenAI key. Full source on GitHub.</p>
-    </div>
-  </div>
-</section>
-
-<!-- SETUP -->
-<section class="section" id="setup">
-  <p class="section-label">Setup</p>
-  <h2 class="section-title">Up in 3 minutes</h2>
-  <p class="section-sub">One download, three permission grants, one API key.</p>
-
-  <div class="setup-steps">
-    <div class="setup-step">
-      <div class="setup-num">1</div>
-      <div>
-        <h3>Download &amp; install</h3>
-        <p>Download <strong>IntenType.dmg</strong>, open it, and drag IntenType to your Applications folder.</p>
-      </div>
-    </div>
-    <div class="setup-step">
-      <div class="setup-num">2</div>
-      <div>
-        <h3>Grant three permissions</h3>
-        <p>macOS will ask for these on first launch. Go to <code>System Settings → Privacy &amp; Security</code> and enable:</p>
-        <div class="perm-list" style="margin-top:16px">
-          <div class="perm"><span class="perm-icon">♿</span><div>Accessibility<span>Lets IntenType detect the focused field and inject text</span></div></div>
-          <div class="perm"><span class="perm-icon">⌨️</span><div>Input Monitoring<span>Lets IntenType detect when you hold the Right Option key</span></div></div>
-          <div class="perm"><span class="perm-icon">🎙️</span><div>Microphone<span>Records your voice while the key is held</span></div></div>
+<!-- VIDEO -->
+<div class="video-section" id="demo">
+  <div class="video-wrap">
+    <!-- Replace src with your screen recording -->
+    <video id="demoVideo" poster="" preload="none" controls style="display:none"></video>
+    <div class="video-placeholder" id="videoPlaceholder">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:24px">
+        <!-- Key + waveform flow visualization -->
+        <div style="display:flex;align-items:center;gap:16px">
+          <!-- keyboard key pill -->
+          <div style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.14);border-radius:8px;padding:10px 16px;font-size:14px;font-weight:600;color:var(--white);letter-spacing:.3px;box-shadow:0 2px 0 rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.08)">
+            ⌥ Right Option
+          </div>
+          <!-- arrow -->
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted2)" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          <!-- mini waveform pill (the overlay) -->
+          <div style="display:flex;align-items:center;gap:8px;background:rgba(14,14,16,.95);border:1px solid rgba(255,255,255,.12);border-radius:24px;padding:8px 18px">
+            <div class="pill-dot" style="width:8px;height:8px"></div>
+            <div style="display:flex;gap:2px;align-items:center;height:18px">
+              <div class="bar" style="width:3px;animation-duration:1.3s"></div>
+              <div class="bar" style="width:3px;animation-delay:.1s;animation-duration:1.1s"></div>
+              <div class="bar" style="width:3px;animation-delay:.2s;animation-duration:.9s"></div>
+              <div class="bar" style="width:3px;animation-delay:.3s;animation-duration:1.2s"></div>
+              <div class="bar" style="width:3px;animation-delay:.4s;animation-duration:1.0s"></div>
+              <div class="bar" style="width:3px;animation-delay:.5s;animation-duration:1.3s"></div>
+            </div>
+            <span style="font-size:11px;color:rgba(255,255,255,.6);font-weight:500">Recording…</span>
+          </div>
+        </div>
+        <div style="text-align:center">
+          <p style="font-size:14px;color:var(--muted);margin-bottom:4px">Demo video coming soon</p>
+          <p style="font-size:12px;color:var(--muted2)">Replace <code>video src</code> in index.html with your screen recording</p>
         </div>
       </div>
     </div>
-    <div class="setup-step">
-      <div class="setup-num">3</div>
+  </div>
+  <p class="video-label">Hold Right Option → speak → release. Done.</p>
+</div>
+
+<div class="divider"></div>
+
+<!-- HOW IT WORKS -->
+<section class="section" id="how">
+  <p class="section-eyebrow">How it works</p>
+  <h2 class="section-h">Three seconds, start to finish</h2>
+  <p class="section-p">No switching apps, no clicking, no copy-pasting. Just speak.</p>
+  <div class="steps-grid">
+    <div class="step-card">
+      <div class="step-icon">
+        <!-- keyboard key icon -->
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e8312a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8 14h.01M12 14h.01M16 14h.01M6 14h.01"/><path d="M5 17h14"/></svg>
+      </div>
+      <h3>Hold Right Option</h3>
+      <p>Press and hold the <strong style="color:var(--white)">⌥ Right Option</strong> key. A waveform pill appears at the top of your screen and recording begins instantly.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e8312a" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      </div>
+      <h3>Say what you mean</h3>
+      <p>Talk like you normally would. Fillers, fragments, rambling — it doesn't matter. Whisper transcribes it locally.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e8312a" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </div>
+      <h3>Release — it types</h3>
+      <p>GPT polishes the transcript, removes filler words, fixes grammar, and injects the result into whatever text field is active.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- FEATURES -->
+<section class="section" id="features">
+  <p class="section-eyebrow">Features</p>
+  <h2 class="section-h">Everything in one hotkey</h2>
+  <p class="section-p">No cloud microphone. No subscription. No browser extension.</p>
+  <div class="feat-grid">
+    <div class="feat-card">
+      <div class="feat-icon">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+      </div>
+      <h3>Audio stays on your Mac</h3>
+      <p>Whisper runs entirely locally. Your voice never touches a server. Transcription works offline.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      </div>
+      <h3>GPT cleans the transcript</h3>
+      <p>Filler words gone, grammar fixed, intent preserved. The output reads like you drafted it, not like you rambled it.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round"><ellipse cx="12" cy="12" rx="10" ry="10"/><path d="M12 8v4l3 3"/></svg>
+      </div>
+      <h3>Gets sharper over time</h3>
+      <p>Every rewrite is stored locally. Future GPT calls use your own history as examples so the style matches yours exactly.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+      </div>
+      <h3>Works in any app</h3>
+      <p>Injects via clipboard + keystroke. Slack, Mail, VS Code, Notion, Terminal, browsers — anywhere a cursor is active.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <h3>Skips sensitive fields</h3>
+      <p>Detects password fields and secure input mode. Injection is automatically blocked so nothing leaks.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+      </div>
+      <h3>Bring your own key</h3>
+      <p>No IntenType account. No IntenType subscription. You pay OpenAI directly — typically cents per day of heavy use.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- SETUP -->
+<section class="section" id="setup">
+  <p class="section-eyebrow">Setup</p>
+  <h2 class="section-h">Running in under 3 minutes</h2>
+  <p class="section-p">One drag-and-drop, three permission prompts, one API key.</p>
+  <div class="setup-list">
+    <div class="setup-row">
+      <div class="setup-circle">1</div>
       <div>
-        <h3>Add your OpenAI key</h3>
-        <p>Click the <code>🎤</code> menubar icon → <strong>Set API Key…</strong><br>
-        Get a key at <a href="https://platform.openai.com/api-keys" style="color:var(--white)">platform.openai.com/api-keys</a> (free to start).</p>
+        <h3>Download &amp; install</h3>
+        <p>Download <strong>IntenType.dmg</strong>, open it, drag IntenType into <strong>Applications</strong>. Launch it — the IntenType icon appears in your menubar at the top right.</p>
       </div>
     </div>
-    <div class="setup-step">
-      <div class="setup-num">4</div>
+    <div class="setup-row">
+      <div class="setup-circle">2</div>
       <div>
-        <h3>Start talking</h3>
-        <p>Click in any text field anywhere on your Mac, hold <code>Right Option</code>, speak, release. Done.</p>
+        <h3>Grant three permissions</h3>
+        <p>Open <code>System Settings → Privacy &amp; Security</code> and enable IntenType for each:</p>
+        <div class="perm-row">
+          <div class="perm-item">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a6 6 0 0112 0v2"/></svg>
+            Accessibility
+            <span>Injects text into the focused field</span>
+          </div>
+          <div class="perm-item">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round"><rect x="4" y="2" width="16" height="12" rx="2"/><path d="M2 14h20M8 18l-2 3M16 18l2 3M12 14v7"/></svg>
+            Input Monitoring
+            <span>Detects when Right Option is held</span>
+          </div>
+          <div class="perm-item">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 10a7 7 0 0014 0M12 19v3"/></svg>
+            Microphone
+            <span>Records while the key is held</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="setup-row">
+      <div class="setup-circle">3</div>
+      <div>
+        <h3>Paste your OpenAI key</h3>
+        <p>Click the <strong>IntenType icon in your menubar</strong> → <strong>Set API Key…</strong> and paste a key from <a href="https://platform.openai.com/api-keys" style="color:var(--white);text-underline-offset:3px">platform.openai.com/api-keys</a>. The key is stored locally — never uploaded anywhere.</p>
+      </div>
+    </div>
+    <div class="setup-row">
+      <div class="setup-circle">4</div>
+      <div>
+        <h3>Hold Right Option and speak</h3>
+        <p>Click into any text field anywhere on your Mac. Hold <code>⌥ Right Option</code>, speak, release. The polished text appears immediately.</p>
       </div>
     </div>
   </div>
 </section>
 
 <!-- CTA -->
-<section class="cta-section">
-  <h2>Stop typing.<br>Start talking.</h2>
-  <p>Free, open source, and runs entirely on your Mac.</p>
-  <a class="btn-primary" href="https://github.com/shankarswamy294/IntenType/releases/latest/download/IntenType.dmg">
-    ↓ &nbsp;Download IntenType — Free
+<section class="cta">
+  <h2>Stop typing.<br>Just talk.</h2>
+  <p>Free, open source, fully local transcription.</p>
+  <a class="btn-dl" href="https://github.com/shankarswamy294/IntenType/releases/latest/download/IntenType.dmg">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+    Download IntenType — Free
   </a>
-  <br><br>
-  <a class="btn-secondary" href="https://github.com/shankarswamy294/IntenType">View source on GitHub →</a>
 </section>
 
 <!-- FOOTER -->
 <footer>
-  <div>© 2025 IntenType · Free &amp; Open Source</div>
-  <div style="display:flex;gap:24px">
+  <div class="footer-l">
+    <img src="logo.svg" alt="IntenType"/>
+    <p>© 2025 IntenType</p>
+  </div>
+  <div class="footer-links">
     <a href="https://github.com/shankarswamy294/IntenType">GitHub</a>
     <a href="https://github.com/shankarswamy294/IntenType/releases">Releases</a>
-    <a href="https://github.com/shankarswamy294/IntenType/issues">Report a bug</a>
+    <a href="https://github.com/shankarswamy294/IntenType/issues">Issues</a>
   </div>
 </footer>
 

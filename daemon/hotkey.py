@@ -35,7 +35,7 @@ def create_event_tap(on_down: Callable, on_up: Callable):
         None,
     )
     if tap is None:
-        raise RuntimeError("CGEventTap could not be created. Check Accessibility permissions.")
+        raise RuntimeError("CGEventTap could not be created. Grant Input Monitoring in System Settings.")
 
     source = Quartz.CFMachPortCreateRunLoopSource(None, tap, 0)
     CoreFoundation.CFRunLoopAddSource(

@@ -27,6 +27,15 @@ OPTIONS = {
         "CoreFoundation", "ApplicationServices",
     ],
     "strip": False,
+    # Native dylibs (e.g. libportaudio) can't load from inside a zip
+    "compressed": False,
+    "resources": [
+        "assets/menubar.png",
+        "assets/menubar_rec_0.png",
+        "assets/menubar_rec_1.png",
+        "assets/menubar_rec_2.png",
+        "assets/menubar_rec_3.png",
+    ],
 }
 
 setup(
