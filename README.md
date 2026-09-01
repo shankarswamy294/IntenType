@@ -56,27 +56,35 @@ Works in **Notes, Slack, Teams, Gmail, VS Code, Terminal, browsers** — anywher
 
 ## Installation
 
-### Option A — DMG (recommended)
+### Option A — One-line install (recommended, no Gatekeeper prompts)
+
+Open **Terminal** and paste:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/shankarswamy294/IntenType/main/scripts/install.sh | bash
+```
+
+This downloads IntenType, installs it to `/Applications`, removes the Gatekeeper quarantine, and launches it — no security warnings.
+
+### Option B — Manual DMG install
 
 1. [Download `IntenType-0.1.0.dmg`](https://github.com/shankarswamy294/IntenType/releases/download/v0.1.0/IntenType-0.1.0.dmg)
 2. Open the DMG → drag **IntenType** to **Applications**
-3. Double-click **IntenType** in Applications to launch it
+3. Double-click to launch
 
-> **⚠️ macOS Gatekeeper warning ("Not Opened")**
+> **⚠️ "Not Opened" warning on macOS Sequoia?**
+> macOS blocks unsigned apps downloaded from the internet. To allow it:
+> 1. Click **Done** on the warning
+> 2. Open **System Settings → Privacy & Security** → scroll down
+> 3. Click **Open Anyway** next to IntenType → enter your password
 >
-> macOS Sequoia blocks unsigned apps downloaded from the internet. This is expected — IntenType is open source and safe. To allow it:
->
-> 1. Click **Done** on the warning dialog
-> 2. Open **System Settings → Privacy & Security**
-> 3. Scroll down — you'll see **"IntenType was blocked"**
-> 4. Click **Open Anyway** → enter your Mac password
-> 5. Click **Open** on the final confirmation
->
-> You only do this once. After that, IntenType opens normally every time.
+> You only do this once.
 
-4. The waveform icon appears in your menubar
-5. Enter your [OpenAI API key](https://platform.openai.com/api-keys) when prompted
-6. Grant the 3 permissions when the setup wizard appears
+### After installing
+
+- The waveform icon appears in your menubar
+- Enter your [OpenAI API key](https://platform.openai.com/api-keys) when prompted
+- Grant the 3 permissions when the setup wizard appears
 
 ### Option B — Run from source
 
