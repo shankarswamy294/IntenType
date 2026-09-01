@@ -60,9 +60,13 @@ Works in **Notes, Slack, Teams, Gmail, VS Code, Terminal, browsers** — anywher
 
 1. [Download `IntenType-*.dmg`](https://github.com/shankarswamy294/IntenType/releases/latest)
 2. Open the DMG → drag **IntenType** to `/Applications`
-3. Launch IntenType — the waveform icon appears in your menubar
-4. Enter your [OpenAI API key](https://platform.openai.com/api-keys) when prompted
-5. Grant the 3 permissions when the setup wizard appears
+3. **First launch — bypass Gatekeeper:**
+   - **Right-click** IntenType in `/Applications` → click **Open**
+   - Click **Open** again in the prompt that appears
+   - *(macOS blocks unsigned apps on double-click but allows them via right-click → Open. You only need to do this once.)*
+4. The waveform icon appears in your menubar
+5. Enter your [OpenAI API key](https://platform.openai.com/api-keys) when prompted
+6. Grant the 3 permissions when the setup wizard appears
 
 ### Option B — Run from source
 
