@@ -282,7 +282,7 @@ class _Delegate(NSObject):
             result = alert.runModal()
             if result == NSAlertFirstButtonReturn:
                 if perm == "input_monitoring":
-                    perms_mod.open_settings("input_monitoring")
+                    perms_mod.request_input_monitoring()
                 elif perm == "accessibility":
                     perms_mod.request_accessibility()
                 elif perm == "microphone":

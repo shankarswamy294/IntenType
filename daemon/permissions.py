@@ -68,6 +68,26 @@ def request_microphone():
     done.wait(timeout=10)
 
 
+def request_input_monitoring():
+    """Trigger Input Monitoring permission dialog by attempting a real (non-listen-only) CGEventTap."""
+    import time
+    mask = Quartz.CGEventMaskBit(Quartz.kCGEventFlagsChanged)
+    tap = Quartz.CGEventTapCreate(
+        Quartz.kCGHIDEventTap,
+        Quartz.kCGHeadInsertEventTap,
+        Quartz.kCGEventTapOptionDefault,
+        mask,
+        lambda *a: a[2],
+        None,
+    )
+    if tap:
+        Quartz.CGEventTapEnable(tap, False)
+    else:
+        # macOS didn't auto-prompt — fall back to opening the pane
+        open_settings("input_monitoring")
+    time.sleep(0.5)
+
+
 def request_accessibility():
     """Opens System Settings prompt for Accessibility (or the pane if already shown)."""
     try:
