@@ -396,6 +396,23 @@
 </section>
 
 <!-- TRANSFORM DEMO -->
+<!-- VIDEO -->
+<div style="max-width:760px;margin:0 auto 0;padding:0 24px 60px;position:relative;z-index:1">
+  <div style="border-radius:18px;overflow:hidden;border:1px solid var(--border2);box-shadow:0 20px 60px rgba(0,0,0,.6)">
+    <a href="https://share.gemini.google/usfRc6lKfOqd" target="_blank" rel="noopener" style="display:block;position:relative;background:var(--surface);">
+      <div style="aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#0f0f11 0%,#1a0a09 100%);">
+        <div style="text-align:center">
+          <div style="width:72px;height:72px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;box-shadow:0 0 0 12px rgba(232,49,42,0.15);transition:transform .2s">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+          </div>
+          <p style="color:var(--white);font-size:16px;font-weight:600;margin-bottom:6px">Watch Demo</p>
+          <p style="color:var(--muted);font-size:13px">See IntenType in action — 90 seconds</p>
+        </div>
+      </div>
+    </a>
+  </div>
+</div>
+
 <div class="transform-section">
   <div class="transform-card reveal">
     <div class="transform-header">
@@ -541,16 +558,15 @@
       <div class="setup-circle">1</div>
       <div>
         <h3>Download &amp; install</h3>
-        <p>Download <strong>IntenType-0.1.0.dmg</strong>, open it, drag IntenType to <strong>Applications</strong>, then double-click to launch.</p>
-        <div style="margin-top:12px;background:rgba(255,193,7,0.07);border:1px solid rgba(255,193,7,0.2);border-radius:10px;padding:14px 16px;">
-          <p style="font-size:13px;font-weight:600;color:#f5c518;margin-bottom:8px;">⚠️ macOS Gatekeeper warning?</p>
-          <p style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:0">
-            macOS Sequoia blocks unsigned apps. This is expected — IntenType is open source and safe.<br>
-            <strong style="color:var(--white)">Fix in 3 steps:</strong><br>
-            1. Click <strong style="color:var(--white)">Done</strong> on the warning<br>
-            2. Open <strong style="color:var(--white)">System Settings → Privacy &amp; Security</strong> → scroll down<br>
-            3. Click <strong style="color:var(--white)">Open Anyway</strong> next to IntenType → enter your password<br><br>
-            You only do this once. After that, IntenType opens normally.
+        <p style="margin-bottom:12px">The easiest way — open <strong>Terminal</strong> and paste one line:</p>
+        <div style="background:#0a0a0c;border:1px solid var(--border2);border-radius:10px;padding:14px 18px;font-family:'SF Mono','Fira Code',monospace;font-size:13px;color:#e8312a;word-break:break-all;position:relative">
+          curl -fsSL https://raw.githubusercontent.com/shankarswamy294/IntenType/main/scripts/install.sh | bash
+        </div>
+        <p style="margin-top:10px;font-size:13px;color:var(--muted)">Downloads, installs to Applications, and removes Gatekeeper — no security warnings.</p>
+        <div style="margin-top:14px;background:rgba(255,193,7,0.06);border:1px solid rgba(255,193,7,0.18);border-radius:10px;padding:12px 16px;">
+          <p style="font-size:12px;font-weight:600;color:#f5c518;margin-bottom:6px">Prefer the DMG? You'll see a Gatekeeper warning:</p>
+          <p style="font-size:12px;color:var(--muted);line-height:1.7;margin:0">
+            Click <strong style="color:var(--white)">Done</strong> → <strong style="color:var(--white)">System Settings → Privacy &amp; Security</strong> → scroll down → <strong style="color:var(--white)">Open Anyway</strong> → enter password. One-time only.
           </p>
         </div>
       </div>
