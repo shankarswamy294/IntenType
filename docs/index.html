@@ -68,7 +68,7 @@
     }
     .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
     .nav-logo img { height: 24px; display: block; }
-    .nav-logo span { font-size: 15px; font-weight: 600; color: var(--white); letter-spacing: -.3px; }
+    .nav-logo span { font-size: 15px; letter-spacing: -.3px; }
     .nav-links { display: flex; gap: 28px; }
     .nav-links a { color: var(--muted); text-decoration: none; font-size: 14px; transition: color .15s; }
     .nav-links a:hover { color: var(--white); }
@@ -94,7 +94,7 @@
       background: radial-gradient(ellipse, rgba(232,49,42,0.08) 0%, transparent 60%);
       pointer-events: none; z-index: 0;
     }
-    .hero > * { position: relative; z-index: 1; }
+    .hero > *:not(.hero-glow) { position: relative; z-index: 1; }
 
     .eyebrow {
       display: inline-flex; align-items: center; gap: 8px;
@@ -102,30 +102,25 @@
       padding: 5px 14px; border-radius: 20px;
       font-size: 12px; font-weight: 500; color: var(--muted); letter-spacing: .4px;
       margin-bottom: 28px;
-      animation: fadeDown .6s cubic-bezier(.22,1,.36,1) both;
     }
     .eyebrow-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--red); animation: blink 2s ease infinite; }
     @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.25} }
     @keyframes fadeDown { from{opacity:0;transform:translateY(-12px)} to{opacity:1;transform:translateY(0)} }
-    @keyframes fadeUp   { from{opacity:0;transform:translateY(20px)}  to{opacity:1;transform:translateY(0)} }
 
     h1 {
       font-size: clamp(46px, 7vw, 88px);
       font-weight: 700; letter-spacing: -3px; line-height: 1.04;
       max-width: 800px; margin-bottom: 24px;
-      animation: fadeUp .7s .1s cubic-bezier(.22,1,.36,1) both;
     }
     h1 em { font-style: normal; color: var(--red); }
     .hero-sub {
       font-size: clamp(16px, 2vw, 19px);
       color: var(--muted); max-width: 480px; line-height: 1.7;
       margin-bottom: 44px;
-      animation: fadeUp .7s .2s cubic-bezier(.22,1,.36,1) both;
     }
     .hero-actions {
       display: flex; gap: 12px; align-items: center; flex-wrap: wrap; justify-content: center;
       margin-bottom: 48px;
-      animation: fadeUp .7s .3s cubic-bezier(.22,1,.36,1) both;
     }
     .btn-primary {
       display: inline-flex; align-items: center; gap: 10px;
@@ -146,12 +141,10 @@
     .compat-note {
       font-size: 12px; color: var(--muted2);
       display: flex; align-items: center; gap: 6px;
-      animation: fadeUp .7s .4s cubic-bezier(.22,1,.36,1) both;
     }
 
     /* ── RECORDING PILL ── */
     .pill-wrap {
-      animation: fadeUp .7s .35s cubic-bezier(.22,1,.36,1) both;
       margin-bottom: 20px;
     }
     .pill-demo {
@@ -337,8 +330,13 @@
 <!-- NAV -->
 <nav>
   <a class="nav-logo" href="#">
-    <img src="logo.svg" alt="IntenType"/>
-    <span>IntenType</span>
+    <svg width="26" height="22" viewBox="0 0 26 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="3" cy="11" r="2.5" fill="#e8312a"/>
+      <rect x="8"  y="6"  width="3" height="10" rx="1.5" fill="#f0f0f2"/>
+      <rect x="13" y="3"  width="3" height="16" rx="1.5" fill="#f0f0f2"/>
+      <rect x="18" y="7"  width="3" height="8"  rx="1.5" fill="#f0f0f2"/>
+    </svg>
+    <span><span style="color:var(--white);font-weight:600">Inten</span><span style="color:var(--red);font-weight:600">Type</span></span>
   </a>
   <div class="nav-links">
     <a href="#how">How it works</a>
@@ -615,7 +613,7 @@
   /* ── SCROLL REVEAL ── */
   const observer = new IntersectionObserver(entries => {
     entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
-  }, { threshold: 0.12 });
+  }, { threshold: 0.05, rootMargin: '0px 0px -40px 0px' });
   document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
   /* ── TRANSFORM DEMO ── */
