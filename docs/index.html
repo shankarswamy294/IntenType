@@ -320,9 +320,13 @@
     .footer-l { display: flex; align-items: center; gap: 10px; }
     .footer-l img { height: 18px; opacity: .5; }
     footer p { font-size: 12px; color: var(--muted2); }
-    .footer-links { display: flex; gap: 20px; }
+    .footer-links { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
     .footer-links a { font-size: 12px; color: var(--muted2); text-decoration: none; transition: color .15s; }
     .footer-links a:hover { color: var(--muted); }
+    .footer-contact { display: inline-flex; align-items: center; gap: 6px; font-size: 13px !important;
+      color: var(--fg) !important; background: var(--card); border: 1px solid var(--border2);
+      padding: 6px 12px; border-radius: 20px; transition: border-color .15s, background .15s !important; }
+    .footer-contact:hover { border-color: var(--accent) !important; background: rgba(232,49,42,.08) !important; color: var(--fg) !important; }
 
     @media(max-width:768px) {
       nav { padding: 0 20px; }
@@ -684,13 +688,13 @@
     <a href="https://github.com/shankarswamy294/IntenType/releases">Releases</a>
     <a href="https://github.com/shankarswamy294/IntenType/issues">Issues</a>
     <span style="color:var(--border2)">|</span>
-    <a href="https://www.linkedin.com/in/shankarswamy294/" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/></svg>
+    <a href="https://www.linkedin.com/in/shankarswamy294/" target="_blank" rel="noopener" class="footer-contact">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/></svg>
       LinkedIn
     </a>
-    <a href="mailto:Shankarswamy294@gmail.com" style="display:inline-flex;align-items:center;gap:5px">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 01-2.06 0L2 7"/></svg>
-      Contact
+    <a href="mailto:Shankarswamy294@gmail.com" class="footer-contact">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 01-2.06 0L2 7"/></svg>
+      Shankarswamy294@gmail.com
     </a>
   </div>
 </footer>
